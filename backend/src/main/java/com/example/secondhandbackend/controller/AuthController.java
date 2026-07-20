@@ -3,6 +3,8 @@ package com.example.secondhandbackend.controller;
 import com.example.secondhandbackend.dto.MessageResponse;
 import com.example.secondhandbackend.dto.RegisterRequest;
 import com.example.secondhandbackend.service.UserService;
+import com.example.secondhandbackend.dto.LoginRequest;
+import com.example.secondhandbackend.dto.LoginResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,5 +32,10 @@ public class AuthController {
                 request.getPhoneNumber()
         );
         return new MessageResponse("User registered successfully");
+    }
+
+    @PostMapping("/login")
+    public LoginResponse login(@RequestBody LoginRequest request) {
+        return userService.login(request.getUsername(), request.getPassword());
     }
 }
