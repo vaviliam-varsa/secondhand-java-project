@@ -5,6 +5,7 @@ import com.example.secondhandbackend.dto.AdvertisementListItemResponse;
 import com.example.secondhandbackend.dto.CreateAdResponse;
 import com.example.secondhandbackend.entity.Advertisement;
 import com.example.secondhandbackend.service.AdvertisementService;
+import com.example.secondhandbackend.dto.AdvertisementDetailResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -43,5 +44,10 @@ public class AdvertisementController {
         );
 
         return new CreateAdResponse(ad.getId(), "Advertisement submitted for review");
+    }
+
+    @GetMapping("/{id}")
+    public AdvertisementDetailResponse getAdvertisementDetail(@PathVariable Long id) {
+        return advertisementService.getAdvertisementDetail(id);
     }
 }
