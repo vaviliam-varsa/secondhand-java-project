@@ -121,11 +121,9 @@ The database starts empty. To test the application, register the following accou
 - Prevents users from messaging themselves about their own advertisement
 - Ratings: submitting a 1–5 score with optional comment, average score calculation, duplicate-rating prevention, self-rating prevention
 - Admin panel: listing pending advertisements, approving/rejecting them, listing users, blocking/unblocking users
+- Image upload for advertisements (multipart upload, stored on disk, served as static resources, ownership-restricted)
 - Standardized error responses (`{ "message": ..., "status": ... }`) across all endpoints
 - Full API documentation available in [`docs/api-contract.md`](docs/api-contract.md)
-
-### Not yet implemented
-- Image upload for advertisements (planned as a follow-up; the data model already supports it)
 
 ### Frontend
 *(To be completed as JavaFX screens are implemented — e.g. registration/login, advertisement listing and search, advertisement details, posting/editing ads, favorites, chat, ratings, admin panel.)*
@@ -141,7 +139,7 @@ The database starts empty. To test the application, register the following accou
 ## Individual Contributions
 
 **Parsa Vakili:**
-I was responsible for designing and implementing the entire Backend of the project. This included setting up the initial Spring Boot project structure with SQLite as the persistence layer, and designing the domain model (User, Advertisement, AdImage, Category, City, Conversation, Message, Favorite, and Rating entities) along with their relationships. I implemented the layered architecture (repository, service, controller, DTO, and exception-handling layers) and built authentication and authorization from scratch, including JWT token generation/validation and Spring Security configuration to protect routes based on ownership and user roles. I implemented all core API endpoints — advertisement CRUD with keyword search, filtering, and sorting; favorites; the chat system (conversations and messages); the rating system with validation rules; and the admin panel for reviewing advertisements and managing users. I manually tested every endpoint (success and error paths) using Postman throughout development, and wrote the API contract (`docs/api-contract.md`) that documents all endpoints for frontend integration, along with the project task list and this README.
+I was responsible for designing and implementing the entire Backend of the project. This included setting up the initial Spring Boot project structure with SQLite as the persistence layer, and designing the domain model (User, Advertisement, AdImage, Category, City, Conversation, Message, Favorite, and Rating entities) along with their relationships. I implemented the layered architecture (repository, service, controller, DTO, and exception-handling layers) and built authentication and authorization from scratch, including JWT token generation/validation and Spring Security configuration to protect routes based on ownership and user roles. I implemented all core API endpoints — advertisement CRUD with keyword search, filtering, and sorting; favorites; the chat system (conversations and messages); the rating system with validation rules; the admin panel for reviewing advertisements and managing users; and image upload for advertisements. I manually tested every endpoint (success and error paths) using Postman throughout development, and wrote the API contract (`docs/api-contract.md`) that documents all endpoints for frontend integration, along with the project task list and this README.
 
 **Mahdi Nikzad:**
 *(To be completed — describe your role in design, implementation, testing, and documentation.)*
