@@ -13,6 +13,7 @@ import com.example.secondhandbackend.repository.CityRepository;
 import com.example.secondhandbackend.repository.UserRepository;
 import com.example.secondhandbackend.dto.AdvertisementDetailResponse;
 import com.example.secondhandbackend.repository.AdImageRepository;
+import com.example.secondhandbackend.exception.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -105,5 +106,46 @@ public class AdvertisementService {
                 imagePaths,
                 ownerInfo
         );
+    }
+
+    public void updateAdvertisement(Long adId, Long userId, String title, String description, Long price) {
+
+        Advertisement ad = advertisementRepository.findById(adId)
+                .orElseThrow(() -> new ResourceNotFoundException("Advertisement not found"));
+
+        if (!ad.getOwner().getId().equals(userId)) {
+            throw new AccessDeniedException("You are not the owner of this advertisement");
+        }
+
+        ad.setTitle(title);
+        ad.setDescription(description);
+        ad.setPrice(price);
+
+        advertisementRepository.save(ad);
+    }
+
+    public void deleteAdvertisement(Long adId, Long userId) {
+
+        Advertisement ad = advertisementRepository.findById(adId)
+                .orElseThrow(() -> new ResourceNotFoundException("Advertisement not found"));
+
+        if (!ad.getOwner().getId().equals(userId)) {
+            throw new AccessDeniedException("You are not the owner of this advertisement");
+        }
+
+        advertisementRepository.delete(ad);
+    }
+
+    public void markAsSold(Long adId, Long userId) {
+
+        Advertisement ad = advertisementRepository.findById(adId)
+                .orElseThrow(() -> new ResourceNotFoundException("Advertisement not found"));
+
+        if (!ad.getOwner().getId().equals(userId)) {
+            throw new AccessDeniedException("You are not the owner of this advertisement");
+        }
+
+        ad.setStatus(AdStatus.SOLD);
+        advertisementRepository.save(ad);
     }
 }
