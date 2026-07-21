@@ -3,6 +3,7 @@ package com.example.secondhandbackend.exception;
 import com.example.secondhandbackend.dto.ErrorResponse;
 import com.example.secondhandbackend.exception.AuthenticationFailedException;
 import com.example.secondhandbackend.exception.BlockedUserException;
+import com.example.secondhandbackend.exception.AccessDeniedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -31,6 +32,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BlockedUserException.class)
     public ResponseEntity<ErrorResponse> handleBlockedUser(BlockedUserException ex) {
+        ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.FORBIDDEN.value());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex) {
         ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.FORBIDDEN.value());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
