@@ -11,6 +11,8 @@ import com.example.secondhandbackend.repository.AdvertisementRepository;
 import com.example.secondhandbackend.repository.CategoryRepository;
 import com.example.secondhandbackend.repository.CityRepository;
 import com.example.secondhandbackend.repository.UserRepository;
+import com.example.secondhandbackend.dto.AdvertisementDetailResponse;
+import com.example.secondhandbackend.repository.AdImageRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,15 +25,18 @@ public class AdvertisementService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final CityRepository cityRepository;
+    private final AdImageRepository adImageRepository;
 
     public AdvertisementService(AdvertisementRepository advertisementRepository,
                                 UserRepository userRepository,
                                 CategoryRepository categoryRepository,
-                                CityRepository cityRepository) {
+                                CityRepository cityRepository,
+                                AdImageRepository adImageRepository) {
         this.advertisementRepository = advertisementRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
         this.cityRepository = cityRepository;
+        this.adImageRepository = adImageRepository;
     }
 
     public Advertisement createAdvertisement(Long ownerId, String title, String description,
@@ -73,5 +78,32 @@ public class AdvertisementService {
                         ad.getCreatedAt()
                 ))
                 .toList();
+    }
+
+    public AdvertisementDetailResponse getAdvertisementDetail(Long id) {
+
+        Advertisement ad = advertisementRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Advertisement not found"));
+
+        List<String> imagePaths = adImageRepository.findByAdvertisementId(id)
+                .stream()
+                .map(image -> image.getFilePath())
+                .toList();
+
+        AdvertisementDetailResponse.OwnerInfo ownerInfo = new AdvertisementDetailResponse.OwnerInfo(
+                ad.getOwner().getId(), ad.getOwner().getFullName());
+
+        return new AdvertisementDetailResponse(
+                ad.getId(),
+                ad.getTitle(),
+                ad.getDescription(),
+                ad.getPrice(),
+                ad.getCity().getName(),
+                ad.getCategory().getName(),
+                ad.getStatus().name(),
+                ad.getCreatedAt(),
+                imagePaths,
+                ownerInfo
+        );
     }
 }
