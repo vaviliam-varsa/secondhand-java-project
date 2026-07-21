@@ -26,11 +26,6 @@ public class AdvertisementController {
         this.advertisementService = advertisementService;
     }
 
-    @GetMapping
-    public List<AdvertisementListItemResponse> getAdvertisements() {
-        return advertisementService.getActiveAdvertisements();
-    }
-
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CreateAdResponse createAdvertisement(@RequestBody AdvertisementCreateRequest request,
@@ -48,6 +43,18 @@ public class AdvertisementController {
         );
 
         return new CreateAdResponse(ad.getId(), "Advertisement submitted for review");
+    }
+
+    @GetMapping
+    public List<AdvertisementListItemResponse> getAdvertisements(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long cityId,
+            @RequestParam(required = false) Long minPrice,
+            @RequestParam(required = false) Long maxPrice,
+            @RequestParam(required = false) String sort) {
+
+        return advertisementService.searchAdvertisements(keyword, categoryId, cityId, minPrice, maxPrice, sort);
     }
 
     @GetMapping("/{id}")
