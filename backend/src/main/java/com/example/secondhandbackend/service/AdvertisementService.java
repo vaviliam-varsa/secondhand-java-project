@@ -65,8 +65,11 @@ public class AdvertisementService {
         return advertisementRepository.save(ad);
     }
 
-    public List<AdvertisementListItemResponse> getActiveAdvertisements() {
-        List<Advertisement> ads = advertisementRepository.findByStatus(AdStatus.ACTIVE);
+    public List<AdvertisementListItemResponse> searchAdvertisements(
+            String keyword, Long categoryId, Long cityId, Long minPrice, Long maxPrice, String sort) {
+
+        List<Advertisement> ads = advertisementRepository.searchAdvertisements(
+                keyword, categoryId, cityId, minPrice, maxPrice, sort);
 
         return ads.stream()
                 .map(ad -> new AdvertisementListItemResponse(
