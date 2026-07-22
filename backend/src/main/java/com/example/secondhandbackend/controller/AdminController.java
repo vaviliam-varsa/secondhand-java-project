@@ -1,6 +1,7 @@
 package com.example.secondhandbackend.controller;
 
 import com.example.secondhandbackend.dto.*;
+import com.example.secondhandbackend.entity.Category;
 import com.example.secondhandbackend.service.AdminService;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,5 +49,28 @@ public class AdminController {
     public MessageResponse unblockUser(@PathVariable Long id) {
         adminService.unblockUser(id);
         return new MessageResponse("User unblocked");
+    }
+
+    // ---------- مدیریت دسته‌بندی ----------
+
+    @GetMapping("/categories")
+    public List<Category> getAllCategories() {
+        return adminService.getAllCategories();
+    }
+
+    @PostMapping("/categories")
+    public Category createCategory(@RequestBody CategoryRequest request) {
+        return adminService.createCategory(request.getName());
+    }
+
+    @PutMapping("/categories/{id}")
+    public Category updateCategory(@PathVariable Long id, @RequestBody CategoryRequest request) {
+        return adminService.updateCategory(id, request.getName());
+    }
+
+    @DeleteMapping("/categories/{id}")
+    public MessageResponse deleteCategory(@PathVariable Long id) {
+        adminService.deleteCategory(id);
+        return new MessageResponse("Category deleted");
     }
 }
