@@ -27,10 +27,11 @@ public class AdListView {
         root.setPadding(new Insets(10));
 
         boolean loggedIn = SessionManager.getInstance().isLoggedIn();
+        boolean isAdmin = SessionManager.getInstance().isAdmin();
 
         // ---- نوار بالا: وضعیت کاربر و دسترسی سریع ----
         Label userLabel = new Label(loggedIn
-                ? "کاربر: " + SessionManager.getInstance().getUsername()
+                ? "کاربر: " + SessionManager.getInstance().getUsername() + (isAdmin ? " (مدیر)" : "")
                 : "مهمان (وارد نشده‌اید)");
 
         Button authButton = new Button(loggedIn ? "خروج" : "ورود");
@@ -55,7 +56,17 @@ public class AdListView {
             Button myAdsButton = new Button("آگهی‌های من (این نشست)");
             myAdsButton.setOnAction(e -> SceneManager.show(MyAdsView.build(), "آگهی‌های من"));
 
-            actionsBar.getChildren().addAll(createAdButton, favoritesButton, myAdsButton);
+            Button conversationsButton = new Button("گفت‌وگوهای من");
+            conversationsButton.setOnAction(e -> SceneManager.show(ConversationsView.build(), "گفت‌وگوهای من"));
+
+            actionsBar.getChildren().addAll(createAdButton, favoritesButton, myAdsButton, conversationsButton);
+
+            if (isAdmin) {
+                Button adminButton = new Button("پنل مدیریت");
+                adminButton.setStyle("-fx-font-weight: bold;");
+                adminButton.setOnAction(e -> SceneManager.show(AdminPanelView.build(), "پنل مدیریت"));
+                actionsBar.getChildren().add(adminButton);
+            }
         }
         actionsBar.setPadding(new Insets(0, 0, 10, 0));
 
