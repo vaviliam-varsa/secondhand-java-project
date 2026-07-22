@@ -136,7 +136,8 @@ public class AdvertisementService {
             throw new AccessDeniedException("You are not the owner of this advertisement");
         }
 
-        advertisementRepository.delete(ad);
+        ad.setStatus(AdStatus.DELETED);
+        advertisementRepository.save(ad);
     }
 
     public void markAsSold(Long adId, Long userId) {
