@@ -26,12 +26,14 @@ public class AdListView {
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(10));
 
-        // ---- نوار بالا: وضعیت کاربر ----
-        Label userLabel = new Label(SessionManager.getInstance().isLoggedIn()
+        boolean loggedIn = SessionManager.getInstance().isLoggedIn();
+
+        // ---- نوار بالا: وضعیت کاربر و دسترسی سریع ----
+        Label userLabel = new Label(loggedIn
                 ? "کاربر: " + SessionManager.getInstance().getUsername()
                 : "مهمان (وارد نشده‌اید)");
 
-        Button authButton = new Button(SessionManager.getInstance().isLoggedIn() ? "خروج" : "ورود");
+        Button authButton = new Button(loggedIn ? "خروج" : "ورود");
         authButton.setOnAction(e -> {
             if (SessionManager.getInstance().isLoggedIn()) {
                 AuthService.logout();
@@ -40,7 +42,22 @@ public class AdListView {
         });
 
         HBox topBar = new HBox(10, userLabel, authButton);
-        topBar.setPadding(new Insets(0, 0, 10, 0));
+        topBar.setPadding(new Insets(0, 0, 6, 0));
+
+        HBox actionsBar = new HBox(8);
+        if (loggedIn) {
+            Button createAdButton = new Button("+ ثبت آگهی جدید");
+            createAdButton.setOnAction(e -> SceneManager.show(AdFormView.buildCreate(), "ثبت آگهی جدید"));
+
+            Button favoritesButton = new Button("علاقه‌مندی‌های من");
+            favoritesButton.setOnAction(e -> SceneManager.show(FavoritesView.build(), "علاقه‌مندی‌های من"));
+
+            Button myAdsButton = new Button("آگهی‌های من (این نشست)");
+            myAdsButton.setOnAction(e -> SceneManager.show(MyAdsView.build(), "آگهی‌های من"));
+
+            actionsBar.getChildren().addAll(createAdButton, favoritesButton, myAdsButton);
+        }
+        actionsBar.setPadding(new Insets(0, 0, 10, 0));
 
         // ---- فیلترها ----
         TextField keywordField = new TextField();
@@ -72,11 +89,10 @@ public class AdListView {
         // ---- لیست آگهی‌ها ----
         ListView<Advertisement> listView = new ListView<>();
 
-        VBox top = new VBox(10, topBar, filterBar);
+        VBox top = new VBox(6, topBar, actionsBar, filterBar);
         root.setTop(top);
         root.setCenter(listView);
 
-        // بارگذاری اولیه دسته‌بندی‌ها و شهرها
         loadCategories(categoryBox);
         loadCities(cityBox);
 
@@ -100,7 +116,6 @@ public class AdListView {
             }
         });
 
-        // بارگذاری اولیه‌ی لیست بدون فیلتر
         loadAds(listView, new HashMap<>());
 
         return root;
