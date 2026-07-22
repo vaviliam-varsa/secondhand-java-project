@@ -32,6 +32,10 @@ public class RegisterView {
         phoneField.setPromptText("شماره تماس");
         phoneField.setMaxWidth(300);
 
+        TextField emailField = new TextField();
+        emailField.setPromptText("ایمیل");
+        emailField.setMaxWidth(300);
+
         Button registerButton = new Button("ثبت‌نام");
         registerButton.setMaxWidth(300);
 
@@ -41,7 +45,7 @@ public class RegisterView {
         registerButton.setOnAction(e -> {
             if (fullNameField.getText().isBlank() || usernameField.getText().isBlank()
                     || passwordField.getText().isBlank() || phoneField.getText().isBlank()) {
-                AlertUtil.showError("لطفاً همه فیلدها را پر کنید.");
+                AlertUtil.showError("لطفاً همه فیلدهای ضروری را پر کنید.");
                 return;
             }
 
@@ -50,6 +54,7 @@ public class RegisterView {
             req.username = usernameField.getText().trim();
             req.password = passwordField.getText();
             req.phoneNumber = phoneField.getText().trim();
+            req.email = emailField.getText().trim();
 
             registerButton.setDisable(true);
             Task<Void> task = new Task<>() {
@@ -73,7 +78,7 @@ public class RegisterView {
 
         backButton.setOnAction(e -> SceneManager.show(LoginView.build(), "ورود"));
 
-        VBox box = new VBox(12, title, fullNameField, usernameField, passwordField, phoneField, registerButton, backButton);
+        VBox box = new VBox(12, title, fullNameField, usernameField, passwordField, phoneField, emailField, registerButton, backButton);
         box.setAlignment(Pos.CENTER);
         box.setPadding(new Insets(40));
         return box;
