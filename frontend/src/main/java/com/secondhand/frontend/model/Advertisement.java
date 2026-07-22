@@ -12,6 +12,7 @@ public class Advertisement {
     @Override
     public String toString() {
         String priceStr = price != null ? String.format("%,d", price) : "-";
-        return title + "  |  " + priceStr + " تومان  |  " + city + "  |  " + category;
+        return title + "  |  " + priceStr + " تومان  |  " + city + "  |  " + category
+                + (status != null ? "  |  " + status : "");
     }
 }
