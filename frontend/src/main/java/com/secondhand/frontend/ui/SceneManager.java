@@ -14,7 +14,7 @@ public class SceneManager {
     public static void show(Parent root, String title) {
         Scene scene = stage.getScene();
         if (scene == null) {
-            scene = new Scene(root, 950, 650);
+            scene = new Scene(root, 1000, 700);
             stage.setScene(scene);
         } else {
             scene.setRoot(root);
