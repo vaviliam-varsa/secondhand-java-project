@@ -57,6 +57,13 @@ public class AdvertisementController {
         return advertisementService.searchAdvertisements(keyword, categoryId, cityId, minPrice, maxPrice, sort);
     }
 
+    @GetMapping("/mine")
+    public List<AdvertisementListItemResponse> getMyAdvertisements(Authentication authentication) {
+
+        Long ownerId = (Long) authentication.getPrincipal();
+        return advertisementService.getMyAdvertisements(ownerId);
+    }
+
     @GetMapping("/{id}")
     public AdvertisementDetailResponse getAdvertisementDetail(@PathVariable Long id) {
         return advertisementService.getAdvertisementDetail(id);

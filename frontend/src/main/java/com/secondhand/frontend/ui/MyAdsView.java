@@ -1,8 +1,7 @@
 package com.secondhand.frontend.ui;
 
-import com.secondhand.frontend.model.AdvertisementDetail;
+import com.secondhand.frontend.model.Advertisement;
 import com.secondhand.frontend.service.AdvertisementService;
-import com.secondhand.frontend.session.SessionManager;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
@@ -15,13 +14,10 @@ import javafx.scene.layout.VBox;
 import java.util.List;
 
 /**
- * Shows advertisements the current user created during this session.
- *
- * The API contract has no "get my advertisements" endpoint, so there is no way to
- * reliably list a user's ads (especially PENDING ones, which don't appear in the
- * public list). As a practical workaround, SessionManager remembers the id of every
- * ad the user creates in this session, and this screen fetches their current details.
- * Ads created in a previous session (before the app was restarted) will not appear here.
+ * Shows all advertisements owned by the current user (any status except DELETED),
+ * fetched from GET /api/advertisements/mine. This includes PENDING and REJECTED ads
+ * that don't appear in the public list. Backed by a real endpoint, so it survives
+ * logout/login and works across devices/sessions.
  */
 public class MyAdsView {
 
@@ -32,54 +28,58 @@ public class MyAdsView {
         Button backButton = new Button("بازگشت به لیست آگهی‌ها");
         backButton.setOnAction(e -> SceneManager.show(AdListView.build(), "لیست آگهی‌ها"));
 
-        Label title = new Label("آگهی‌های من (این نشست)");
+        Label title = new Label("آگهی‌های من");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
 
-        Label hint = new Label("توجه: این لیست فقط آگهی‌هایی را نشان می‌دهد که در همین اجرای برنامه ثبت کرده‌اید،"
-                + " چون API فعلی مسیر «دریافت آگهی‌های من» را ندارد.");
-        hint.setWrapText(true);
-        hint.setStyle("-fx-text-fill: #888; -fx-font-size: 11px;");
-
         VBox itemsBox = new VBox(8);
-
-        List<Long> myAdIds = SessionManager.getInstance().getMyAdIds();
-        if (myAdIds.isEmpty()) {
-            itemsBox.getChildren().add(new Label("هنوز در این نشست آگهی‌ای ثبت نکرده‌اید."));
-        } else {
-            for (Long adId : myAdIds) {
-                itemsBox.getChildren().add(buildLoadingRow(adId));
-            }
-        }
+        Label statusLabel = new Label("در حال بارگذاری...");
+        itemsBox.getChildren().add(statusLabel);
 
         ScrollPane scrollPane = new ScrollPane(itemsBox);
         scrollPane.setFitToWidth(true);
 
-        root.getChildren().addAll(backButton, title, hint, scrollPane);
+        root.getChildren().addAll(backButton, title, scrollPane);
+
+        loadMyAds(itemsBox, statusLabel);
+
         return root;
     }
 
-    private static HBox buildLoadingRow(Long adId) {
-        Label label = new Label("آگهی #" + adId + " — در حال بارگذاری...");
-        HBox row = new HBox(10, label);
-
-        Task<AdvertisementDetail> task = new Task<>() {
+    private static void loadMyAds(VBox itemsBox, Label statusLabel) {
+        Task<List<Advertisement>> task = new Task<>() {
             @Override
-            protected AdvertisementDetail call() throws Exception {
-                return AdvertisementService.getDetail(adId);
+            protected List<Advertisement> call() throws Exception {
+                return AdvertisementService.getMine();
             }
         };
+
         task.setOnSucceeded(e -> {
-            AdvertisementDetail ad = task.getValue();
-            String priceText = ad.price != null ? String.format("%,d تومان", ad.price) : "-";
-            label.setText(ad.title + "   |   " + priceText + "   |   وضعیت: " + ad.status);
-
-            Button viewButton = new Button("مشاهده / مدیریت");
-            viewButton.setOnAction(e2 -> SceneManager.show(AdDetailView.build(ad.id), "جزئیات آگهی"));
-            row.getChildren().add(viewButton);
+            itemsBox.getChildren().clear();
+            List<Advertisement> ads = task.getValue();
+            if (ads.isEmpty()) {
+                itemsBox.getChildren().add(new Label("هنوز آگهی‌ای ثبت نکرده‌اید."));
+            } else {
+                for (Advertisement ad : ads) {
+                    itemsBox.getChildren().add(buildRow(ad));
+                }
+            }
         });
-        task.setOnFailed(e -> label.setText("آگهی #" + adId + " — بارگذاری ناموفق بود."));
-        new Thread(task).start();
 
-        return row;
+        task.setOnFailed(e -> {
+            itemsBox.getChildren().clear();
+            itemsBox.getChildren().add(new Label("بارگذاری آگهی‌های شما ناموفق بود. دوباره تلاش کنید."));
+        });
+
+        new Thread(task).start();
+    }
+
+    private static HBox buildRow(Advertisement ad) {
+        String priceText = ad.price != null ? String.format("%,d تومان", ad.price) : "-";
+        Label label = new Label(ad.title + "   |   " + priceText + "   |   وضعیت: " + ad.status);
+
+        Button viewButton = new Button("مشاهده / مدیریت");
+        viewButton.setOnAction(e -> SceneManager.show(AdDetailView.build(ad.id), "جزئیات آگهی"));
+
+        return new HBox(10, label, viewButton);
     }
 }

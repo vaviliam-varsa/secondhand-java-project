@@ -25,6 +25,15 @@ public class AdvertisementService {
     }
 
     /**
+     * Returns all advertisements owned by the current user (any status except DELETED),
+     * including PENDING/REJECTED ones. Requires JWT.
+     */
+    public static List<Advertisement> getMine() throws ApiException {
+        String json = ApiClient.get("/api/advertisements/mine", true);
+        return JsonUtil.fromJsonList(json, Advertisement.class);
+    }
+
+    /**
      * Creates a new advertisement. Requires JWT. The new ad is saved with status PENDING
      * and will not appear in the public list until an admin approves it.
      * Returns the new advertisement's id.

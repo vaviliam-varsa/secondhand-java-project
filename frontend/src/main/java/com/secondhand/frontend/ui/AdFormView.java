@@ -8,7 +8,6 @@ import com.secondhand.frontend.model.UpdateAdvertisementRequest;
 import com.secondhand.frontend.service.AdvertisementService;
 import com.secondhand.frontend.service.CategoryService;
 import com.secondhand.frontend.service.CityService;
-import com.secondhand.frontend.session.SessionManager;
 import com.secondhand.frontend.util.AlertUtil;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
@@ -155,8 +154,6 @@ public class AdFormView {
                 };
                 task.setOnSucceeded(ev -> {
                     submitButton.setDisable(false);
-                    Long newId = task.getValue();
-                    SessionManager.getInstance().rememberCreatedAd(newId);
                     AlertUtil.showInfo("آگهی ثبت شد و در انتظار بررسی و تایید مدیر است.");
                     SceneManager.show(AdListView.build(), "لیست آگهی‌ها");
                 });

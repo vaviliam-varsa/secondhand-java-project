@@ -84,6 +84,28 @@ public class AdvertisementService {
                 .toList();
     }
 
+    /**
+     * Returns all advertisements owned by the given user, including PENDING/REJECTED/SOLD ones
+     * (everything except DELETED), newest first. Used for the "my ads" screen.
+     */
+    public List<AdvertisementListItemResponse> getMyAdvertisements(Long ownerId) {
+
+        List<Advertisement> ads = advertisementRepository
+                .findByOwnerIdAndStatusNotOrderByCreatedAtDesc(ownerId, AdStatus.DELETED);
+
+        return ads.stream()
+                .map(ad -> new AdvertisementListItemResponse(
+                        ad.getId(),
+                        ad.getTitle(),
+                        ad.getPrice(),
+                        ad.getCity().getName(),
+                        ad.getCategory().getName(),
+                        ad.getStatus().name(),
+                        ad.getCreatedAt()
+                ))
+                .toList();
+    }
+
     public AdvertisementDetailResponse getAdvertisementDetail(Long id) {
 
         Advertisement ad = advertisementRepository.findById(id)

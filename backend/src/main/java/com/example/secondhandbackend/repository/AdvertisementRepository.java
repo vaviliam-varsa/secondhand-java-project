@@ -10,6 +10,8 @@ import java.util.List;
 public interface AdvertisementRepository extends JpaRepository<Advertisement, Long> {
     List<Advertisement> findByStatus(AdStatus status);
 
+    List<Advertisement> findByOwnerIdAndStatusNotOrderByCreatedAtDesc(Long ownerId, AdStatus excludedStatus);
+
     @Query("""
         SELECT a FROM Advertisement a
         WHERE a.status = com.example.secondhandbackend.enums.AdStatus.ACTIVE
