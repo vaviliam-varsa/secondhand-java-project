@@ -8,9 +8,12 @@ import com.secondhand.frontend.service.AuthService;
 import com.secondhand.frontend.util.AlertUtil;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.util.List;
@@ -51,12 +54,17 @@ public class AdminPanelView {
         return root;
     }
 
+    // ---------- تب آگهی‌های در انتظار بررسی (فقط ظاهر تغییر کرده) ----------
+
     private static VBox buildPendingAdsPane() {
         VBox box = new VBox(8);
         box.setStyle(Theme.BG_DARK);
-        box.setPadding(new Insets(10));
+        box.setPadding(new Insets(16));
 
-        VBox itemsBox = new VBox(8);
+        Label header = new Label("آگهی‌هایی که هنوز توسط شما تایید یا رد نشده‌اند:");
+        header.setStyle(Theme.TEXT_MUTED);
+
+        VBox itemsBox = new VBox(10);
         Label loadingLabel = new Label("در حال بارگذاری...");
         loadingLabel.setStyle(Theme.TEXT_LIGHT);
         itemsBox.getChildren().add(loadingLabel);
@@ -65,7 +73,7 @@ public class AdminPanelView {
         scrollPane.setFitToWidth(true);
         scrollPane.setStyle(Theme.BG_DARK);
 
-        box.getChildren().add(scrollPane);
+        box.getChildren().addAll(header, scrollPane);
 
         loadPendingAds(itemsBox, loadingLabel);
 
@@ -83,12 +91,12 @@ public class AdminPanelView {
             itemsBox.getChildren().remove(loadingLabel);
             List<AdminPendingAd> ads = task.getValue();
             if (ads.isEmpty()) {
-                Label empty = new Label("آگهی‌ای در انتظار بررسی نیست.");
+                Label empty = new Label("✅ در حال حاضر آگهی‌ای در انتظار بررسی نیست.");
                 empty.setStyle(Theme.TEXT_MUTED);
                 itemsBox.getChildren().add(empty);
             } else {
                 for (AdminPendingAd ad : ads) {
-                    itemsBox.getChildren().add(buildPendingAdRow(ad, itemsBox));
+                    itemsBox.getChildren().add(buildPendingAdCard(ad));
                 }
             }
         });
@@ -99,17 +107,38 @@ public class AdminPanelView {
         new Thread(task).start();
     }
 
-    private static HBox buildPendingAdRow(AdminPendingAd ad, VBox itemsBox) {
+    private static VBox buildPendingAdCard(AdminPendingAd ad) {
         String ownerName = ad.owner != null ? ad.owner.fullName : "-";
-        Label label = new Label(ad.title + "   |   فروشنده: " + ownerName);
-        label.setStyle(Theme.TEXT_LIGHT);
-        label.setMaxWidth(500);
+
+        Label titleLabel = new Label(ad.title);
+        titleLabel.setStyle(Theme.CARD_TITLE + "-fx-font-size: 15px;");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        Label idBadge = new Label("#" + ad.id);
+        idBadge.setStyle("-fx-background-color: #3a3a3d; -fx-text-fill: #cfcfcf; -fx-font-size: 10px; "
+                + "-fx-background-radius: 10; -fx-padding: 3 10 3 10;");
+
+        HBox topRow = new HBox(titleLabel, spacer, idBadge);
+        topRow.setAlignment(Pos.CENTER_LEFT);
+
+        Label ownerLabel = new Label("فروشنده: " + ownerName);
+        ownerLabel.setStyle(Theme.TEXT_MUTED);
 
         Button reviewButton = Theme.primaryButton("مشاهده و بررسی");
         reviewButton.setOnAction(e -> SceneManager.show(AdminAdDetailView.build(ad.id), "بررسی آگهی"));
 
-        return new HBox(10, label, reviewButton);
+        HBox buttonsRow = new HBox(reviewButton);
+        buttonsRow.setPadding(new Insets(6, 0, 0, 0));
+
+        VBox card = new VBox(8, topRow, ownerLabel, buttonsRow);
+        card.setStyle(Theme.CARD_BG + "-fx-padding: 14;");
+
+        return card;
     }
+
+    // ---------- تب مدیریت کاربران (بدون تغییر) ----------
 
     private static VBox buildUsersPane() {
         VBox box = new VBox(8);
@@ -212,7 +241,7 @@ public class AdminPanelView {
         return row;
     }
 
-    // ---------- مدیریت دسته‌بندی‌ها ----------
+    // ---------- مدیریت دسته‌بندی‌ها (بدون تغییر) ----------
 
     private static VBox buildCategoriesPane() {
         VBox box = new VBox(12);

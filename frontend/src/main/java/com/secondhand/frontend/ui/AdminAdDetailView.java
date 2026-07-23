@@ -23,20 +23,16 @@ import java.util.Optional;
  */
 public class AdminAdDetailView {
 
-    private static final String PRIMARY_BUTTON_STYLE =
-            "-fx-background-color: #ec1c24; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 18 8 18;";
-    private static final String SECONDARY_BUTTON_STYLE =
-            "-fx-background-color: #2e2e30; -fx-text-fill: #cfcfcf; -fx-background-radius: 6; -fx-padding: 8 14 8 14;";
-
     public static Parent build(long adId) {
         VBox root = new VBox(12);
+        root.setStyle(Theme.BG_DARK);
         root.setPadding(new Insets(20));
 
-        Button backButton = new Button("بازگشت به پنل مدیریت");
-        backButton.setStyle(SECONDARY_BUTTON_STYLE);
+        Button backButton = Theme.secondaryButton("بازگشت به پنل مدیریت");
         backButton.setOnAction(e -> SceneManager.show(AdminPanelView.build(), "پنل مدیریت"));
 
         Label loadingLabel = new Label("در حال بارگذاری جزئیات آگهی...");
+        loadingLabel.setStyle(Theme.TEXT_LIGHT);
         root.getChildren().addAll(backButton, loadingLabel);
 
         loadDetail(root, loadingLabel, adId);
@@ -67,37 +63,45 @@ public class AdminAdDetailView {
 
     private static void renderDetail(VBox root, AdvertisementDetail ad) {
         Label title = new Label(ad.title);
-        title.setStyle("-fx-text-fill: #f2f2f2; -fx-font-size: 20px; -fx-font-weight: bold;");
+        title.setStyle(Theme.SECTION_TITLE);
 
         Label price = new Label(ad.price != null ? String.format("%,d تومان", ad.price) : "-");
-        price.setStyle("-fx-text-fill: #4caf50; -fx-font-size: 16px; -fx-font-weight: bold;");
+        price.setStyle(Theme.CARD_PRICE + "-fx-font-size: 16px;");
 
         Label meta = new Label("شهر: " + ad.city + "   |   دسته‌بندی: " + ad.category + "   |   وضعیت: " + ad.status);
-        meta.setStyle("-fx-text-fill: #cfcfcf;");
+        meta.setStyle(Theme.TEXT_LIGHT);
+
+        root.getChildren().addAll(title, price, meta);
+
+        // اگه قبلاً رد شده بوده (مثلاً فروشنده ویرایش کرده و دوباره اومده برای بررسی)، دلیل قبلی رو هم نشون بده
+        if ("REJECTED".equals(ad.status) && ad.rejectionReason != null && !ad.rejectionReason.isBlank()) {
+            Label rejectionBanner = new Label("این آگهی قبلاً رد شده بود. دلیل: " + ad.rejectionReason);
+            rejectionBanner.setStyle(Theme.DANGER_BANNER);
+            rejectionBanner.setWrapText(true);
+            root.getChildren().add(rejectionBanner);
+        }
 
         Label descTitle = new Label("توضیحات:");
-        descTitle.setStyle("-fx-text-fill: #f2f2f2; -fx-font-weight: bold;");
+        descTitle.setStyle(Theme.SECTION_TITLE + "-fx-font-size: 14px;");
         Label desc = new Label(ad.description != null ? ad.description : "-");
-        desc.setStyle("-fx-text-fill: #cfcfcf;");
+        desc.setStyle(Theme.TEXT_LIGHT);
         desc.setWrapText(true);
 
         String ownerName = ad.owner != null ? ad.owner.fullName : "-";
         Label owner = new Label("فروشنده: " + ownerName);
-        owner.setStyle("-fx-text-fill: #cfcfcf;");
+        owner.setStyle(Theme.TEXT_LIGHT);
 
         Label imagesTitle = new Label("تصاویر آگهی:");
-        imagesTitle.setStyle("-fx-text-fill: #f2f2f2; -fx-font-weight: bold;");
+        imagesTitle.setStyle(Theme.SECTION_TITLE + "-fx-font-size: 14px;");
         ImagePickerView gallery = new ImagePickerView(ad.id, ad.images, false);
 
-        root.getChildren().addAll(title, price, meta, descTitle, desc, owner, imagesTitle, gallery.getNode());
+        root.getChildren().addAll(descTitle, desc, owner, imagesTitle, gallery.getNode());
 
         if ("PENDING".equals(ad.status)) {
-            Button approveButton = new Button("تایید آگهی");
-            approveButton.setStyle(PRIMARY_BUTTON_STYLE);
+            Button approveButton = Theme.successButton("✓ تایید آگهی");
             approveButton.setOnAction(e -> handleApprove(ad.id));
 
-            Button rejectButton = new Button("رد آگهی");
-            rejectButton.setStyle(SECONDARY_BUTTON_STYLE);
+            Button rejectButton = Theme.dangerButton("✕ رد آگهی");
             rejectButton.setOnAction(e -> handleReject(ad.id));
 
             HBox actions = new HBox(10, approveButton, rejectButton);
@@ -129,6 +133,10 @@ public class AdminAdDetailView {
         Optional<String> result = dialog.showAndWait();
 
         result.ifPresent(reason -> {
+            if (reason.isBlank()) {
+                AlertUtil.showError("لطفاً دلیل رد آگهی را وارد کنید.");
+                return;
+            }
             Task<Void> task = new Task<>() {
                 @Override
                 protected Void call() throws Exception {
