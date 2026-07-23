@@ -30,18 +30,23 @@ public class AdListView {
             "-fx-background-color: #2e2e30; -fx-text-fill: #cfcfcf; -fx-background-radius: 6; -fx-padding: 8 14 8 14;";
 
     public static Parent build() {
+        // Admins never see the normal browsing screen — if an admin session
+        // somehow ends up here, send them straight to the admin panel.
+        if (SessionManager.getInstance().isAdmin()) {
+            return AdminPanelView.build();
+        }
+
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #1c1c1e;");
         root.setPadding(new Insets(10));
 
         boolean loggedIn = SessionManager.getInstance().isLoggedIn();
-        boolean isAdmin = SessionManager.getInstance().isAdmin();
 
         Label appTitle = new Label("دیوار۲ (نمونه)");
         appTitle.setStyle("-fx-text-fill: #ec1c24; -fx-font-size: 22px; -fx-font-weight: bold;");
 
         Label userLabel = new Label(loggedIn
-                ? "کاربر: " + SessionManager.getInstance().getUsername() + (isAdmin ? " (مدیر)" : "")
+                ? "کاربر: " + SessionManager.getInstance().getUsername()
                 : "مهمان (وارد نشده‌اید)");
         userLabel.setStyle("-fx-text-fill: #cfcfcf;");
 
@@ -77,12 +82,6 @@ public class AdListView {
 
             actionsBar.getChildren().addAll(createAdButton, favoritesButton, myAdsButton, conversationsButton);
 
-            if (isAdmin) {
-                Button adminButton = new Button("پنل مدیریت");
-                adminButton.setStyle(SECONDARY_BUTTON_STYLE + "-fx-font-weight: bold;");
-                adminButton.setOnAction(e -> SceneManager.show(AdminPanelView.build(), "پنل مدیریت"));
-                actionsBar.getChildren().add(adminButton);
-            }
         }
         actionsBar.setPadding(new Insets(0, 0, 10, 0));
 

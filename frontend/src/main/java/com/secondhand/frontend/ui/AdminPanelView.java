@@ -3,6 +3,7 @@ package com.secondhand.frontend.ui;
 import com.secondhand.frontend.model.AdminPendingAd;
 import com.secondhand.frontend.model.AdminUser;
 import com.secondhand.frontend.service.AdminService;
+import com.secondhand.frontend.service.AuthService;
 import com.secondhand.frontend.util.AlertUtil;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
@@ -21,8 +22,11 @@ public class AdminPanelView {
         VBox root = new VBox(12);
         root.setPadding(new Insets(20));
 
-        Button backButton = new Button("بازگشت به لیست آگهی‌ها");
-        backButton.setOnAction(e -> SceneManager.show(AdListView.build(), "لیست آگهی‌ها"));
+        Button logoutButton = new Button("خروج از حساب");
+        logoutButton.setOnAction(e -> {
+            AuthService.logout();
+            SceneManager.show(LoginView.build(), "ورود");
+        });
 
         Label title = new Label("پنل مدیریت");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
@@ -41,7 +45,7 @@ public class AdminPanelView {
 
         tabPane.getTabs().addAll(pendingTab, usersTab, categoriesTab);
 
-        root.getChildren().addAll(backButton, title, tabPane);
+        root.getChildren().addAll(logoutButton, title, tabPane);
         return root;
     }
 
