@@ -14,7 +14,7 @@ public class RegisterView {
 
     public static Parent build() {
         Label title = new Label("ثبت‌نام در سامانه");
-        title.setStyle("-fx-text-fill: #ec1c24; -fx-font-size: 22px; -fx-font-weight: bold;");
+        title.setStyle(Theme.APP_TITLE);
 
         TextField fullNameField = new TextField();
         fullNameField.setPromptText("نام و نام خانوادگی");
@@ -32,12 +32,11 @@ public class RegisterView {
         phoneField.setPromptText("شماره تماس");
         phoneField.setMaxWidth(300);
 
-        Button registerButton = new Button("ثبت‌نام");
-        registerButton.setStyle("-fx-background-color: #ec1c24; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;");
+        Button registerButton = Theme.primaryButton("ثبت‌نام");
         registerButton.setMaxWidth(300);
+        registerButton.setDefaultButton(true);
 
-        Button backButton = new Button("قبلاً حساب دارید؟ ورود");
-        backButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #2255aa;");
+        Button backButton = Theme.linkButton("قبلاً حساب دارید؟ ورود");
 
         registerButton.setOnAction(e -> {
             if (fullNameField.getText().isBlank() || usernameField.getText().isBlank()
@@ -75,7 +74,7 @@ public class RegisterView {
         backButton.setOnAction(e -> SceneManager.show(LoginView.build(), "ورود"));
 
         VBox box = new VBox(12, title, fullNameField, usernameField, passwordField, phoneField, registerButton, backButton);
-        box.setStyle("-fx-background-color: #1c1c1e;");
+        box.setStyle(Theme.BG_DARK);
         box.setAlignment(Pos.CENTER);
         box.setPadding(new Insets(40));
         return box;

@@ -10,6 +10,7 @@ public class AdvertisementDetail {
     public String city;
     public String category;
     public String status;
+    public String rejectionReason;
     public String createdAt;
     public List<String> images;
     public Owner owner;

@@ -22,22 +22,16 @@ import java.util.Optional;
 
 public class AdDetailView {
 
-    private static final String PRIMARY_BUTTON_STYLE =
-            "-fx-background-color: #ec1c24; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 18 8 18;";
-    private static final String SECONDARY_BUTTON_STYLE =
-            "-fx-background-color: #2e2e30; -fx-text-fill: #cfcfcf; -fx-background-radius: 6; -fx-padding: 8 14 8 14;";
-
     public static Parent build(long adId) {
         VBox root = new VBox(12);
-        root.setStyle("-fx-background-color: #1c1c1e;");
+        root.setStyle(Theme.BG_DARK);
         root.setPadding(new Insets(20));
 
-        Button backButton = new Button("بازگشت به لیست");
-        backButton.setStyle(SECONDARY_BUTTON_STYLE);
+        Button backButton = Theme.secondaryButton("بازگشت به لیست");
         backButton.setOnAction(e -> SceneManager.show(AdListView.build(), "لیست آگهی‌ها"));
 
         Label loadingLabel = new Label("در حال بارگذاری جزئیات آگهی...");
-        loadingLabel.setStyle("-fx-text-fill: #cfcfcf;");
+        loadingLabel.setStyle(Theme.TEXT_LIGHT);
         root.getChildren().addAll(backButton, loadingLabel);
 
         loadDetail(root, loadingLabel, adId);
@@ -69,77 +63,88 @@ public class AdDetailView {
 
     private static void renderDetail(VBox root, AdvertisementDetail ad) {
         Label title = new Label(ad.title);
-        title.setStyle("-fx-text-fill: #f2f2f2; -fx-font-size: 20px; -fx-font-weight: bold;");
+        title.setStyle(Theme.SECTION_TITLE);
 
         Label price = new Label(ad.price != null ? String.format("%,d تومان", ad.price) : "-");
-        price.setStyle("-fx-text-fill: #4caf50; -fx-font-size: 16px; -fx-font-weight: bold;");
+        price.setStyle(Theme.CARD_PRICE + "-fx-font-size: 16px;");
 
         Label meta = new Label("شهر: " + ad.city + "   |   دسته‌بندی: " + ad.category + "   |   وضعیت: " + ad.status);
-        meta.setStyle("-fx-text-fill: #cfcfcf;");
+        meta.setStyle(Theme.TEXT_LIGHT);
+
+        root.getChildren().addAll(title, price, meta);
+
+        // بنر دلیل رد آگهی (اگه رد شده باشه)
+        if ("REJECTED".equals(ad.status) && ad.rejectionReason != null && !ad.rejectionReason.isBlank()) {
+            Label rejectionBanner = new Label("این آگهی توسط مدیر رد شده است. دلیل: " + ad.rejectionReason);
+            rejectionBanner.setStyle(Theme.DANGER_BANNER);
+            rejectionBanner.setWrapText(true);
+            root.getChildren().add(rejectionBanner);
+        }
 
         Label descTitle = new Label("توضیحات:");
-        descTitle.setStyle("-fx-text-fill: #f2f2f2; -fx-font-weight: bold;");
+        descTitle.setStyle(Theme.SECTION_TITLE + "-fx-font-size: 14px;");
         Label desc = new Label(ad.description != null ? ad.description : "-");
-        desc.setStyle("-fx-text-fill: #cfcfcf;");
+        desc.setStyle(Theme.TEXT_LIGHT);
         desc.setWrapText(true);
 
         String ownerName = ad.owner != null ? ad.owner.fullName : "-";
         Label owner = new Label("فروشنده: " + ownerName);
-        owner.setStyle("-fx-text-fill: #cfcfcf;");
+        owner.setStyle(Theme.TEXT_LIGHT);
 
         Label ratingLabel = new Label("امتیاز فروشنده: در حال بارگذاری...");
-        ratingLabel.setStyle("-fx-text-fill: #cfcfcf;");
+        ratingLabel.setStyle(Theme.TEXT_LIGHT);
+
+        Button showCommentsButton = Theme.linkButton("نمایش نظرات");
+        showCommentsButton.setVisible(false);
         if (ad.owner != null && ad.owner.id != null) {
-            loadSellerRating(ad.owner.id, ratingLabel);
+            long ownerId = ad.owner.id;
+            loadSellerRating(ownerId, ratingLabel);
+            showCommentsButton.setVisible(true);
+            showCommentsButton.setOnAction(e -> RatingCommentsDialog.show(ownerId, ownerName));
         } else {
             ratingLabel.setText("امتیاز فروشنده: نامشخص");
         }
+
+        HBox ratingRow = new HBox(10, ratingLabel, showCommentsButton);
 
         boolean loggedIn = SessionManager.getInstance().isLoggedIn();
         boolean isOwner = loggedIn && ad.owner != null && ad.owner.id != null
                 && ad.owner.id.equals(SessionManager.getInstance().getUserId());
 
         Label imagesTitle = new Label("تصاویر آگهی:");
-        imagesTitle.setStyle("-fx-text-fill: #f2f2f2; -fx-font-weight: bold;");
+        imagesTitle.setStyle(Theme.SECTION_TITLE + "-fx-font-size: 14px;");
         ImagePickerView gallery = new ImagePickerView(ad.id, ad.images, isOwner);
 
-        root.getChildren().addAll(title, price, meta, descTitle, desc, owner, ratingLabel,
-                imagesTitle, gallery.getNode());
+        root.getChildren().addAll(descTitle, desc, owner, ratingRow, imagesTitle, gallery.getNode());
 
         HBox actions = new HBox(10);
 
         if (isOwner) {
-            Button editButton = new Button("ویرایش آگهی");
-            editButton.setStyle(SECONDARY_BUTTON_STYLE);
+            Button editButton = Theme.secondaryButton("ویرایش آگهی");
             editButton.setOnAction(e -> SceneManager.show(AdFormView.buildEdit(ad.id), "ویرایش آگهی"));
 
-            Button deleteButton = new Button("حذف آگهی");
-            deleteButton.setStyle(SECONDARY_BUTTON_STYLE);
+            Button deleteButton = Theme.secondaryButton("حذف آگهی");
             deleteButton.setOnAction(e -> handleDelete(ad.id));
 
-            Button soldButton = new Button("علامت‌گذاری به‌عنوان فروخته‌شده");
-            soldButton.setStyle(SECONDARY_BUTTON_STYLE);
+            Button soldButton = Theme.secondaryButton("علامت‌گذاری به‌عنوان فروخته‌شده");
             soldButton.setDisable("SOLD".equals(ad.status));
             soldButton.setOnAction(e -> handleMarkSold(ad.id));
 
             actions.getChildren().addAll(editButton, deleteButton, soldButton);
         } else if (loggedIn) {
-            Button favoriteButton = new Button("افزودن به علاقه‌مندی‌ها");
-            favoriteButton.setStyle(SECONDARY_BUTTON_STYLE);
+            Button favoriteButton = Theme.secondaryButton("افزودن به علاقه‌مندی‌ها");
             favoriteButton.setOnAction(e -> handleAddFavorite(ad.id, favoriteButton));
 
-            Button chatButton = new Button("گفت‌وگو با فروشنده");
-            chatButton.setStyle(PRIMARY_BUTTON_STYLE);
+            Button chatButton = Theme.primaryButton("گفت‌وگو با فروشنده");
             chatButton.setOnAction(e -> handleStartChat(ad.id, ownerName));
 
-            Button ratingButton = new Button("امتیازدهی به فروشنده");
-            ratingButton.setStyle(SECONDARY_BUTTON_STYLE);
+            Button ratingButton = Theme.secondaryButton("امتیازدهی به فروشنده");
             ratingButton.setOnAction(e -> RatingDialog.showAndSubmit(ad.id));
 
             actions.getChildren().addAll(favoriteButton, chatButton, ratingButton);
         } else {
             Label guestHint = new Label("برای افزودن به علاقه‌مندی‌ها، گفت‌وگو یا امتیازدهی، ابتدا وارد شوید.");
-            guestHint.setStyle("-fx-text-fill: #888;");
+            guestHint.setStyle(Theme.TEXT_MUTED);
             actions.getChildren().add(guestHint);
         }
 

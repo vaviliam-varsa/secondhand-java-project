@@ -24,11 +24,6 @@ import java.util.Map;
 
 public class AdListView {
 
-    private static final String PRIMARY_BUTTON_STYLE =
-            "-fx-background-color: #ec1c24; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 18 8 18;";
-    private static final String SECONDARY_BUTTON_STYLE =
-            "-fx-background-color: #2e2e30; -fx-text-fill: #cfcfcf; -fx-background-radius: 6; -fx-padding: 8 14 8 14;";
-
     public static Parent build() {
         // Admins never see the normal browsing screen — if an admin session
         // somehow ends up here, send them straight to the admin panel.
@@ -37,21 +32,20 @@ public class AdListView {
         }
 
         BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: #1c1c1e;");
+        root.setStyle(Theme.BG_DARK);
         root.setPadding(new Insets(10));
 
         boolean loggedIn = SessionManager.getInstance().isLoggedIn();
 
         Label appTitle = new Label("دیوار۲ (نمونه)");
-        appTitle.setStyle("-fx-text-fill: #ec1c24; -fx-font-size: 22px; -fx-font-weight: bold;");
+        appTitle.setStyle(Theme.APP_TITLE);
 
         Label userLabel = new Label(loggedIn
                 ? "کاربر: " + SessionManager.getInstance().getUsername()
                 : "مهمان (وارد نشده‌اید)");
-        userLabel.setStyle("-fx-text-fill: #cfcfcf;");
+        userLabel.setStyle(Theme.TEXT_LIGHT);
 
-        Button authButton = new Button(loggedIn ? "خروج" : "ورود");
-        authButton.setStyle(SECONDARY_BUTTON_STYLE);
+        Button authButton = Theme.secondaryButton(loggedIn ? "خروج" : "ورود");
         authButton.setOnAction(e -> {
             if (SessionManager.getInstance().isLoggedIn()) {
                 AuthService.logout();
@@ -64,31 +58,25 @@ public class AdListView {
 
         HBox actionsBar = new HBox(8);
         if (loggedIn) {
-            Button createAdButton = new Button("+ ثبت آگهی جدید");
-            createAdButton.setStyle(PRIMARY_BUTTON_STYLE);
+            Button createAdButton = Theme.primaryButton("+ ثبت آگهی جدید");
             createAdButton.setOnAction(e -> SceneManager.show(AdFormView.buildCreate(), "ثبت آگهی جدید"));
 
-            Button favoritesButton = new Button("علاقه‌مندی‌های من");
-            favoritesButton.setStyle(SECONDARY_BUTTON_STYLE);
+            Button favoritesButton = Theme.secondaryButton("علاقه‌مندی‌های من");
             favoritesButton.setOnAction(e -> SceneManager.show(FavoritesView.build(), "علاقه‌مندی‌های من"));
 
-            Button myAdsButton = new Button("آگهی‌های من");
-            myAdsButton.setStyle(SECONDARY_BUTTON_STYLE);
+            Button myAdsButton = Theme.secondaryButton("آگهی‌های من");
             myAdsButton.setOnAction(e -> SceneManager.show(MyAdsView.build(), "آگهی‌های من"));
 
-            Button conversationsButton = new Button("گفت‌وگوهای من");
-            conversationsButton.setStyle(SECONDARY_BUTTON_STYLE);
+            Button conversationsButton = Theme.secondaryButton("گفت‌وگوهای من");
             conversationsButton.setOnAction(e -> SceneManager.show(ConversationsView.build(), "گفت‌وگوهای من"));
 
             actionsBar.getChildren().addAll(createAdButton, favoritesButton, myAdsButton, conversationsButton);
-
         }
         actionsBar.setPadding(new Insets(0, 0, 10, 0));
 
         TextField keywordField = new TextField();
         keywordField.setPromptText("جست‌وجو در عنوان/توضیحات");
         keywordField.setPrefWidth(260);
-        keywordField.setStyle("-fx-background-color: #2a2a2c; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 6 14 6 14;");
 
         ComboBox<Category> categoryBox = new ComboBox<>();
         categoryBox.setPromptText("دسته‌بندی");
@@ -108,19 +96,19 @@ public class AdListView {
         sortBox.getItems().addAll("newest", "price_asc", "price_desc");
         sortBox.setPromptText("مرتب‌سازی");
 
-        Button searchButton = new Button("جست‌وجو");
-        searchButton.setStyle(PRIMARY_BUTTON_STYLE);
+        Button searchButton = Theme.primaryButton("جست‌وجو");
+        searchButton.setDefaultButton(true);
 
         HBox filterBar = new HBox(8, keywordField, categoryBox, cityBox, minPriceField, maxPriceField, sortBox, searchButton);
         filterBar.setPadding(new Insets(0, 0, 10, 0));
 
         FlowPane grid = new FlowPane(16, 16);
         grid.setPadding(new Insets(10));
-        grid.setStyle("-fx-background-color: #1c1c1e;");
+        grid.setStyle(Theme.BG_DARK);
 
         ScrollPane scrollPane = new ScrollPane(grid);
         scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background-color: #1c1c1e; -fx-background: #1c1c1e;");
+        scrollPane.setStyle(Theme.BG_DARK + "-fx-background: #1c1c1e;");
 
         VBox top = new VBox(6, topBar, actionsBar, filterBar);
         root.setTop(top);
@@ -173,7 +161,7 @@ public class AdListView {
             }
         };
         task.setOnSucceeded(e -> box.getItems().setAll(task.getValue()));
-        task.setOnFailed(e -> { /* در صورت خطا فیلتر دسته‌بندی صرفاً خالی می‌ماند */ });
+        task.setOnFailed(e -> { });
         new Thread(task).start();
     }
 
@@ -185,7 +173,7 @@ public class AdListView {
             }
         };
         task.setOnSucceeded(e -> box.getItems().setAll(task.getValue()));
-        task.setOnFailed(e -> { /* در صورت خطا فیلتر شهر صرفاً خالی می‌ماند */ });
+        task.setOnFailed(e -> { });
         new Thread(task).start();
     }
 }

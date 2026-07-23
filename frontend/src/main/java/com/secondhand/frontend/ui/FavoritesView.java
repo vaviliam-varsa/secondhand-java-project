@@ -18,20 +18,23 @@ public class FavoritesView {
 
     public static Parent build() {
         VBox root = new VBox(12);
+        root.setStyle(Theme.BG_DARK);
         root.setPadding(new Insets(20));
 
-        Button backButton = new Button("بازگشت به لیست آگهی‌ها");
+        Button backButton = Theme.secondaryButton("بازگشت به لیست آگهی‌ها");
         backButton.setOnAction(e -> SceneManager.show(AdListView.build(), "لیست آگهی‌ها"));
 
         Label title = new Label("علاقه‌مندی‌های من");
-        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+        title.setStyle(Theme.SECTION_TITLE);
 
         VBox itemsBox = new VBox(8);
         Label loadingLabel = new Label("در حال بارگذاری...");
+        loadingLabel.setStyle(Theme.TEXT_LIGHT);
         itemsBox.getChildren().add(loadingLabel);
 
         ScrollPane scrollPane = new ScrollPane(itemsBox);
         scrollPane.setFitToWidth(true);
+        scrollPane.setStyle(Theme.BG_DARK);
 
         root.getChildren().addAll(backButton, title, scrollPane);
 
@@ -51,7 +54,9 @@ public class FavoritesView {
             itemsBox.getChildren().remove(loadingLabel);
             List<FavoriteItem> favorites = task.getValue();
             if (favorites.isEmpty()) {
-                itemsBox.getChildren().add(new Label("هنوز آگهی‌ای به علاقه‌مندی‌ها اضافه نکرده‌اید."));
+                Label empty = new Label("هنوز آگهی‌ای به علاقه‌مندی‌ها اضافه نکرده‌اید.");
+                empty.setStyle(Theme.TEXT_MUTED);
+                itemsBox.getChildren().add(empty);
             } else {
                 for (FavoriteItem fav : favorites) {
                     itemsBox.getChildren().add(buildRow(fav, itemsBox));
@@ -72,19 +77,21 @@ public class FavoritesView {
                 : "-";
 
         Label label = new Label(titleText + "   |   " + priceText);
+        label.setStyle(Theme.TEXT_LIGHT);
         label.setMaxWidth(500);
 
-        Button viewButton = new Button("مشاهده آگهی");
+        Button viewButton = Theme.secondaryButton("مشاهده آگهی");
         viewButton.setDisable(fav.advertisement == null);
 
         HBox row = new HBox(10, label, viewButton);
+        row.setStyle(Theme.CARD_BG + "-fx-padding: 10;");
 
         if (fav.advertisement != null) {
             Long adId = fav.advertisement.id;
             viewButton.setOnAction(e -> SceneManager.show(AdDetailView.build(adId), "جزئیات آگهی"));
         }
 
-        Button removeButton = new Button("حذف از علاقه‌مندی‌ها");
+        Button removeButton = Theme.secondaryButton("حذف از علاقه‌مندی‌ها");
         removeButton.setOnAction(e -> handleRemove(fav.id, itemsBox, row));
         row.getChildren().add(removeButton);
 

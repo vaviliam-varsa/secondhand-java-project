@@ -24,6 +24,12 @@ public class AdvertisementService {
         return JsonUtil.fromJson(json, AdvertisementDetail.class);
     }
 
+    public static List<Advertisement> listMine() throws ApiException {
+
+        String json = ApiClient.get("/api/advertisements/mine", true);
+        return JsonUtil.fromJsonList(json, Advertisement.class);
+    }
+
     /**
      * Returns all advertisements owned by the current user (any status except DELETED),
      * including PENDING/REJECTED ones. Requires JWT.

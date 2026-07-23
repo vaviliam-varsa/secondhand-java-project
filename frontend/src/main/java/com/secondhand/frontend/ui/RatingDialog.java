@@ -19,6 +19,7 @@ public class RatingDialog {
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("امتیازدهی به فروشنده");
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        dialog.getDialogPane().setStyle(Theme.BG_DARK);
 
         ComboBox<Integer> scoreBox = new ComboBox<>();
         scoreBox.getItems().addAll(1, 2, 3, 4, 5);
@@ -29,7 +30,13 @@ public class RatingDialog {
         commentArea.setPrefRowCount(3);
         commentArea.setWrapText(true);
 
-        VBox box = new VBox(10, new Label("امتیاز:"), scoreBox, new Label("نظر:"), commentArea);
+        Label scoreLabel = new Label("امتیاز:");
+        scoreLabel.setStyle(Theme.TEXT_LIGHT);
+        Label commentLabel = new Label("نظر:");
+        commentLabel.setStyle(Theme.TEXT_LIGHT);
+
+        VBox box = new VBox(10, scoreLabel, scoreBox, commentLabel, commentArea);
+        box.setStyle(Theme.BG_DARK);
         box.setPadding(new Insets(10));
         dialog.getDialogPane().setContent(box);
 

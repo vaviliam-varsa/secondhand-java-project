@@ -13,25 +13,20 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.stage.Window;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Reusable image gallery + picker.
- *
- * - CREATE mode (advertisementId == null): picks are staged locally (nothing is uploaded yet).
- *   Call uploadPendingTo(newAdId, callback) right after the advertisement is created.
- * - EDIT / VIEW mode (advertisementId != null): existing images are shown, and if allowUpload
- *   is true, newly picked files are uploaded immediately (the ad already has an id).
- *
- * Clicking any thumbnail opens it full-size in a new window.
- */
 public class ImagePickerView {
 
     private static final double THUMB_SIZE = 90;
@@ -111,7 +106,6 @@ public class ImagePickerView {
         new Thread(task).start();
     }
 
-    /** Call this right after a new advertisement is created, to upload files picked before it had an id. */
     public void uploadPendingTo(long newAdvertisementId, Runnable onAllDone) {
         this.advertisementId = newAdvertisementId;
         if (pendingFiles.isEmpty()) {
@@ -136,7 +130,7 @@ public class ImagePickerView {
         task.setOnFailed(e -> {
             AlertUtil.showError("آپلود عکس شماره " + (index + 1) + " ناموفق بود: "
                     + AlertUtil.extractMessage(task.getException()));
-            uploadSequentially(files, index + 1, onAllDone); // با بقیه‌ی عکس‌ها ادامه بده
+            uploadSequentially(files, index + 1, onAllDone);
         });
         new Thread(task).start();
     }
@@ -179,7 +173,7 @@ public class ImagePickerView {
             iv.setFitWidth(THUMB_SIZE);
             iv.setFitHeight(THUMB_SIZE);
             box.getChildren().add(iv);
-            box.setOnMouseClicked(e -> openFullImage(url));
+            box.setOnMouseClicked(e -> openLightbox(box, url));
         } catch (Exception ex) {
             box.getChildren().add(new Label("خطا در بارگذاری"));
         }
@@ -187,15 +181,46 @@ public class ImagePickerView {
         return box;
     }
 
-    private static void openFullImage(String url) {
+    /** Opens the image full-size in an in-app dimmed overlay (like Divar's lightbox), not a separate OS window. */
+    private static void openLightbox(Node ownerNode, String url) {
         Platform.runLater(() -> {
-            Stage stage = new Stage();
-            ImageView iv = new ImageView(new Image(url, 700, 700, true, true, true));
-            StackPane root = new StackPane(iv);
-            root.setStyle("-fx-background-color: black;");
-            stage.setScene(new Scene(root, 720, 720));
-            stage.setTitle("مشاهده عکس");
-            stage.show();
+            Window ownerWindow = ownerNode.getScene() != null ? ownerNode.getScene().getWindow() : null;
+
+            Stage lightbox = new Stage(StageStyle.TRANSPARENT);
+            if (ownerWindow != null) {
+                lightbox.initOwner(ownerWindow);
+                lightbox.initModality(Modality.WINDOW_MODAL);
+            }
+
+            ImageView iv = new ImageView(new Image(url, 800, 800, true, true, true));
+            iv.setOnMouseClicked(javafx.event.Event::consume);
+
+            Label hint = new Label("برای بستن، بیرون از عکس کلیک کنید یا Esc را بزنید");
+            hint.setStyle("-fx-text-fill: #cccccc; -fx-font-size: 11px;");
+            StackPane.setAlignment(hint, Pos.BOTTOM_CENTER);
+
+            StackPane overlay = new StackPane(iv, hint);
+            overlay.setStyle("-fx-background-color: rgba(0,0,0,0.85);");
+            overlay.setOnMouseClicked(e -> lightbox.close());
+
+            Scene scene = new Scene(overlay);
+            scene.setFill(Color.TRANSPARENT);
+            scene.setOnKeyPressed(e -> {
+                if (e.getCode() == KeyCode.ESCAPE) lightbox.close();
+            });
+            lightbox.setScene(scene);
+
+            if (ownerWindow != null) {
+                lightbox.setX(ownerWindow.getX());
+                lightbox.setY(ownerWindow.getY());
+                lightbox.setWidth(ownerWindow.getWidth());
+                lightbox.setHeight(ownerWindow.getHeight());
+            } else {
+                lightbox.setWidth(800);
+                lightbox.setHeight(800);
+            }
+
+            lightbox.show();
         });
     }
 }

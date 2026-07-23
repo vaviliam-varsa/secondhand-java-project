@@ -22,11 +22,6 @@ import java.util.Collections;
 
 public class AdFormView {
 
-    private static final String PRIMARY_BUTTON_STYLE =
-            "-fx-background-color: #ec1c24; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 18 8 18;";
-    private static final String SECONDARY_BUTTON_STYLE =
-            "-fx-background-color: #2e2e30; -fx-text-fill: #cfcfcf; -fx-background-radius: 6; -fx-padding: 8 14 8 14;";
-
     public static Parent buildCreate() {
         return build(null);
     }
@@ -39,7 +34,7 @@ public class AdFormView {
         boolean editMode = adId != null;
 
         Label title = new Label(editMode ? "ویرایش آگهی" : "ثبت آگهی جدید");
-        title.setStyle("-fx-text-fill: #f2f2f2; -fx-font-size: 18px; -fx-font-weight: bold;");
+        title.setStyle(Theme.SECTION_TITLE);
 
         TextField titleField = new TextField();
         titleField.setPromptText("عنوان آگهی");
@@ -64,16 +59,15 @@ public class AdFormView {
         cityBox.setMaxWidth(400);
 
         Label imagesTitle = new Label("تصاویر آگهی:");
-        imagesTitle.setStyle("-fx-text-fill: #f2f2f2; -fx-font-weight: bold;");
+        imagesTitle.setStyle(Theme.SECTION_TITLE + "-fx-font-size: 14px;");
 
         VBox imagesContainer = new VBox(8);
 
         VBox box = new VBox(12, title, titleField, descriptionField, priceField);
-        box.setStyle("-fx-background-color: #1c1c1e;");
+        box.setStyle(Theme.BG_DARK);
         box.setAlignment(Pos.CENTER);
         box.setPadding(new Insets(30));
 
-        // فقط برای مرجع نگه‌داشتن instance هنگام ثبت آگهی جدید
         final ImagePickerView[] createPickerHolder = new ImagePickerView[1];
 
         if (!editMode) {
@@ -81,17 +75,16 @@ public class AdFormView {
             loadCities(cityBox);
             box.getChildren().addAll(categoryBox, cityBox);
 
-            // در حالت ثبت آگهی جدید، هنوز شناسه‌ای نداریم؛ عکس‌ها موقتاً محلی نگه داشته می‌شوند.
             ImagePickerView picker = new ImagePickerView(null, Collections.emptyList(), true);
             createPickerHolder[0] = picker;
             imagesContainer.getChildren().add(picker.getNode());
         } else {
             Label editHint = new Label("توجه: در حالت ویرایش، دسته‌بندی و شهر آگهی قابل تغییر نیستند.");
-            editHint.setStyle("-fx-text-fill: #888; -fx-font-size: 11px;");
+            editHint.setStyle(Theme.TEXT_MUTED + "-fx-font-size: 11px;");
             box.getChildren().add(editHint);
 
             Label imagesLoading = new Label("در حال بارگذاری تصاویر...");
-            imagesLoading.setStyle("-fx-text-fill: #cfcfcf;");
+            imagesLoading.setStyle(Theme.TEXT_LIGHT);
             imagesContainer.getChildren().add(imagesLoading);
 
             loadExistingAd(adId, titleField, descriptionField, priceField, imagesContainer, imagesLoading);
@@ -99,12 +92,11 @@ public class AdFormView {
 
         box.getChildren().addAll(imagesTitle, imagesContainer);
 
-        Button submitButton = new Button(editMode ? "ذخیره تغییرات" : "ثبت آگهی");
-        submitButton.setStyle(PRIMARY_BUTTON_STYLE);
+        Button submitButton = Theme.primaryButton(editMode ? "ذخیره تغییرات" : "ثبت آگهی");
         submitButton.setMaxWidth(400);
+        submitButton.setDefaultButton(true);
 
-        Button cancelButton = new Button("انصراف");
-        cancelButton.setStyle(SECONDARY_BUTTON_STYLE);
+        Button cancelButton = Theme.secondaryButton("انصراف");
         cancelButton.setMaxWidth(400);
         cancelButton.setOnAction(e -> {
             if (editMode) {

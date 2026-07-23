@@ -1,7 +1,6 @@
 package com.secondhand.frontend.ui;
 
 import com.secondhand.frontend.service.AuthService;
-import com.secondhand.frontend.session.SessionManager;
 import com.secondhand.frontend.util.AlertUtil;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
@@ -14,7 +13,7 @@ public class LoginView {
 
     public static Parent build() {
         Label title = new Label("ورود به سامانه");
-        title.setStyle("-fx-text-fill: #ec1c24; -fx-font-size: 22px; -fx-font-weight: bold;");
+        title.setStyle(Theme.APP_TITLE);
 
         TextField usernameField = new TextField();
         usernameField.setPromptText("نام کاربری");
@@ -24,15 +23,13 @@ public class LoginView {
         passwordField.setPromptText("رمز عبور");
         passwordField.setMaxWidth(280);
 
-        Button loginButton = new Button("ورود");
-        loginButton.setStyle("-fx-background-color: #ec1c24; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;");
+        Button loginButton = Theme.primaryButton("ورود");
         loginButton.setMaxWidth(280);
+        loginButton.setDefaultButton(true);
 
-        Button goRegisterButton = new Button("حساب ندارید؟ ثبت‌نام کنید");
-        goRegisterButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #2255aa;");
+        Button goRegisterButton = Theme.linkButton("حساب ندارید؟ ثبت‌نام کنید");
 
-        Button guestButton = new Button("ورود به عنوان مهمان (مشاهده آگهی‌ها)");
-        guestButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #888;");
+        Button guestButton = Theme.linkButton("ورود به عنوان مهمان (مشاهده آگهی‌ها)");
 
         loginButton.setOnAction(e -> {
             String username = usernameField.getText().trim();
@@ -53,11 +50,7 @@ public class LoginView {
             };
             task.setOnSucceeded(ev -> {
                 loginButton.setDisable(false);
-                if (SessionManager.getInstance().isAdmin()) {
-                    SceneManager.show(AdminPanelView.build(), "پنل مدیریت");
-                } else {
-                    SceneManager.show(AdListView.build(), "لیست آگهی‌ها");
-                }
+                SceneManager.show(AdListView.build(), "لیست آگهی‌ها");
             });
             task.setOnFailed(ev -> {
                 loginButton.setDisable(false);
@@ -70,7 +63,7 @@ public class LoginView {
         guestButton.setOnAction(e -> SceneManager.show(AdListView.build(), "لیست آگهی‌ها"));
 
         VBox box = new VBox(14, title, usernameField, passwordField, loginButton, goRegisterButton, guestButton);
-        box.setStyle("-fx-background-color: #1c1c1e;");
+        box.setStyle(Theme.BG_DARK);
         box.setAlignment(Pos.CENTER);
         box.setPadding(new Insets(40));
         return box;
