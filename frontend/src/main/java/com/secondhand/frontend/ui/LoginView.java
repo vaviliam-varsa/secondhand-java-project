@@ -1,6 +1,7 @@
 package com.secondhand.frontend.ui;
 
 import com.secondhand.frontend.service.AuthService;
+import com.secondhand.frontend.session.SessionManager;
 import com.secondhand.frontend.util.AlertUtil;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
@@ -52,7 +53,11 @@ public class LoginView {
             };
             task.setOnSucceeded(ev -> {
                 loginButton.setDisable(false);
-                SceneManager.show(AdListView.build(), "لیست آگهی‌ها");
+                if (SessionManager.getInstance().isAdmin()) {
+                    SceneManager.show(AdminPanelView.build(), "پنل مدیریت");
+                } else {
+                    SceneManager.show(AdListView.build(), "لیست آگهی‌ها");
+                }
             });
             task.setOnFailed(ev -> {
                 loginButton.setDisable(false);
