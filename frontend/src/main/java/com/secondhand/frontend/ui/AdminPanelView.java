@@ -2,6 +2,7 @@ package com.secondhand.frontend.ui;
 
 import com.secondhand.frontend.model.AdminPendingAd;
 import com.secondhand.frontend.model.AdminUser;
+import com.secondhand.frontend.model.Category;
 import com.secondhand.frontend.service.AdminService;
 import com.secondhand.frontend.service.AuthService;
 import com.secondhand.frontend.util.AlertUtil;
@@ -41,7 +42,10 @@ public class AdminPanelView {
         Tab usersTab = new Tab("مدیریت کاربران");
         usersTab.setContent(buildUsersPane());
 
-        tabPane.getTabs().addAll(pendingTab, usersTab);
+        Tab categoriesTab = new Tab("مدیریت دسته‌بندی‌ها");
+        categoriesTab.setContent(buildCategoriesPane());
+
+        tabPane.getTabs().addAll(pendingTab, usersTab, categoriesTab);
 
         root.getChildren().addAll(logoutButton, title, tabPane);
         return root;
@@ -206,5 +210,169 @@ public class AdminPanelView {
         });
 
         return row;
+    }
+
+    // ---------- مدیریت دسته‌بندی‌ها ----------
+
+    private static VBox buildCategoriesPane() {
+        VBox box = new VBox(12);
+        box.setStyle(Theme.BG_DARK);
+        box.setPadding(new Insets(10));
+
+        Label formLabel = new Label("افزودن دسته‌بندی جدید:");
+        formLabel.setStyle(Theme.TEXT_LIGHT);
+
+        TextField nameField = new TextField();
+        nameField.setPromptText("نام دسته‌بندی");
+        nameField.setPrefWidth(250);
+
+        Button addButton = Theme.primaryButton("افزودن");
+
+        HBox formRow = new HBox(10, nameField, addButton);
+
+        VBox itemsBox = new VBox(8);
+        Label loadingLabel = new Label("در حال بارگذاری...");
+        loadingLabel.setStyle(Theme.TEXT_LIGHT);
+        itemsBox.getChildren().add(loadingLabel);
+
+        ScrollPane scrollPane = new ScrollPane(itemsBox);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle(Theme.BG_DARK);
+
+        addButton.setOnAction(e -> {
+            String name = nameField.getText() == null ? "" : nameField.getText().trim();
+            if (name.isEmpty()) {
+                AlertUtil.showError("نام دسته‌بندی نمی‌تواند خالی باشد.");
+                return;
+            }
+            addButton.setDisable(true);
+            Task<Category> task = new Task<>() {
+                @Override
+                protected Category call() throws Exception {
+                    return AdminService.createCategory(name);
+                }
+            };
+            task.setOnSucceeded(ev -> {
+                addButton.setDisable(false);
+                Category created = task.getValue();
+                itemsBox.getChildren().add(buildCategoryRow(created, itemsBox));
+                nameField.clear();
+            });
+            task.setOnFailed(ev -> {
+                addButton.setDisable(false);
+                AlertUtil.showError(AlertUtil.extractMessage(task.getException()));
+            });
+            new Thread(task).start();
+        });
+
+        box.getChildren().addAll(formLabel, formRow, scrollPane);
+
+        loadCategories(itemsBox, loadingLabel);
+
+        return box;
+    }
+
+    private static void loadCategories(VBox itemsBox, Label loadingLabel) {
+        Task<List<Category>> task = new Task<>() {
+            @Override
+            protected List<Category> call() throws Exception {
+                return AdminService.categories();
+            }
+        };
+        task.setOnSucceeded(e -> {
+            itemsBox.getChildren().remove(loadingLabel);
+            List<Category> categories = task.getValue();
+            if (categories.isEmpty()) {
+                Label empty = new Label("دسته‌بندی‌ای ثبت نشده است.");
+                empty.setStyle(Theme.TEXT_MUTED);
+                itemsBox.getChildren().add(empty);
+            } else {
+                for (Category c : categories) {
+                    itemsBox.getChildren().add(buildCategoryRow(c, itemsBox));
+                }
+            }
+        });
+        task.setOnFailed(e -> {
+            itemsBox.getChildren().remove(loadingLabel);
+            AlertUtil.showError(AlertUtil.extractMessage(task.getException()));
+        });
+        new Thread(task).start();
+    }
+
+    private static HBox buildCategoryRow(Category category, VBox itemsBox) {
+        Label label = new Label(category.name);
+        label.setStyle(Theme.TEXT_LIGHT);
+        label.setMaxWidth(400);
+        label.setMinWidth(200);
+
+        Button editButton = Theme.secondaryButton("ویرایش");
+        Button deleteButton = Theme.secondaryButton("حذف");
+
+        HBox row = new HBox(10, label, editButton, deleteButton);
+        row.setStyle(Theme.CARD_BG + "-fx-padding: 10;");
+
+        editButton.setOnAction(e -> showEditCategoryDialog(category, label));
+
+        deleteButton.setOnAction(e -> {
+            boolean confirmed = AlertUtil.confirm("آیا از حذف دسته‌بندی «" + category.name + "» مطمئن هستید؟");
+            if (!confirmed) return;
+
+            deleteButton.setDisable(true);
+            Task<Void> task = new Task<>() {
+                @Override
+                protected Void call() throws Exception {
+                    AdminService.deleteCategory(category.id);
+                    return null;
+                }
+            };
+            task.setOnSucceeded(ev -> itemsBox.getChildren().remove(row));
+            task.setOnFailed(ev -> {
+                deleteButton.setDisable(false);
+                AlertUtil.showError(AlertUtil.extractMessage(task.getException()));
+            });
+            new Thread(task).start();
+        });
+
+        return row;
+    }
+
+    private static void showEditCategoryDialog(Category category, Label label) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("ویرایش دسته‌بندی");
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        dialog.getDialogPane().setStyle(Theme.BG_DARK);
+
+        Label nameLabel = new Label("نام دسته‌بندی:");
+        nameLabel.setStyle(Theme.TEXT_LIGHT);
+
+        TextField nameField = new TextField(category.name);
+
+        VBox content = new VBox(10, nameLabel, nameField);
+        content.setStyle(Theme.BG_DARK);
+        content.setPadding(new Insets(10));
+        dialog.getDialogPane().setContent(content);
+
+        Optional<ButtonType> result = dialog.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            String newName = nameField.getText() == null ? "" : nameField.getText().trim();
+            if (newName.isEmpty()) {
+                AlertUtil.showError("نام دسته‌بندی نمی‌تواند خالی باشد.");
+                return;
+            }
+
+            Task<Category> task = new Task<>() {
+                @Override
+                protected Category call() throws Exception {
+                    return AdminService.updateCategory(category.id, newName);
+                }
+            };
+            task.setOnSucceeded(e -> {
+                Category updated = task.getValue();
+                category.name = updated.name;
+                label.setText(category.name);
+            });
+            task.setOnFailed(e -> AlertUtil.showError(AlertUtil.extractMessage(task.getException())));
+            new Thread(task).start();
+        }
     }
 }
