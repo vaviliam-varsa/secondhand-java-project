@@ -13,7 +13,7 @@ public class LoginView {
 
     public static Parent build() {
         Label title = new Label("ورود به سامانه");
-        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+        title.setStyle("-fx-text-fill: #ec1c24; -fx-font-size: 22px; -fx-font-weight: bold;");
 
         TextField usernameField = new TextField();
         usernameField.setPromptText("نام کاربری");
@@ -24,13 +24,14 @@ public class LoginView {
         passwordField.setMaxWidth(280);
 
         Button loginButton = new Button("ورود");
+        loginButton.setStyle("-fx-background-color: #ec1c24; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;");
         loginButton.setMaxWidth(280);
 
         Button goRegisterButton = new Button("حساب ندارید؟ ثبت‌نام کنید");
         goRegisterButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #2255aa;");
 
         Button guestButton = new Button("ورود به عنوان مهمان (مشاهده آگهی‌ها)");
-        guestButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #555;");
+        guestButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #888;");
 
         loginButton.setOnAction(e -> {
             String username = usernameField.getText().trim();
@@ -64,6 +65,7 @@ public class LoginView {
         guestButton.setOnAction(e -> SceneManager.show(AdListView.build(), "لیست آگهی‌ها"));
 
         VBox box = new VBox(14, title, usernameField, passwordField, loginButton, goRegisterButton, guestButton);
+        box.setStyle("-fx-background-color: #1c1c1e;");
         box.setAlignment(Pos.CENTER);
         box.setPadding(new Insets(40));
         return box;

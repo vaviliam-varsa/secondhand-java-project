@@ -8,6 +8,8 @@ import com.secondhand.frontend.model.UpdateAdvertisementRequest;
 import com.secondhand.frontend.service.AdvertisementService;
 import com.secondhand.frontend.service.CategoryService;
 import com.secondhand.frontend.service.CityService;
+import com.secondhand.frontend.session.SessionManager;
+import com.secondhand.frontend.ui.components.ImagePickerView;
 import com.secondhand.frontend.util.AlertUtil;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
@@ -16,14 +18,19 @@ import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 
+import java.util.Collections;
+
 public class AdFormView {
 
-    /** Build the "create new advertisement" form. */
+    private static final String PRIMARY_BUTTON_STYLE =
+            "-fx-background-color: #ec1c24; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 18 8 18;";
+    private static final String SECONDARY_BUTTON_STYLE =
+            "-fx-background-color: #2e2e30; -fx-text-fill: #cfcfcf; -fx-background-radius: 6; -fx-padding: 8 14 8 14;";
+
     public static Parent buildCreate() {
         return build(null);
     }
 
-    /** Build the "edit advertisement" form, prefilled with the current values. */
     public static Parent buildEdit(long adId) {
         return build(adId);
     }
@@ -32,7 +39,7 @@ public class AdFormView {
         boolean editMode = adId != null;
 
         Label title = new Label(editMode ? "ویرایش آگهی" : "ثبت آگهی جدید");
-        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+        title.setStyle("-fx-text-fill: #f2f2f2; -fx-font-size: 18px; -fx-font-weight: bold;");
 
         TextField titleField = new TextField();
         titleField.setPromptText("عنوان آگهی");
@@ -56,30 +63,48 @@ public class AdFormView {
         cityBox.setPromptText("شهر");
         cityBox.setMaxWidth(400);
 
-        Label statusLabel = new Label();
+        Label imagesTitle = new Label("تصاویر آگهی:");
+        imagesTitle.setStyle("-fx-text-fill: #f2f2f2; -fx-font-weight: bold;");
+
+        VBox imagesContainer = new VBox(8);
 
         VBox box = new VBox(12, title, titleField, descriptionField, priceField);
+        box.setStyle("-fx-background-color: #1c1c1e;");
         box.setAlignment(Pos.CENTER);
         box.setPadding(new Insets(30));
 
+        // فقط برای مرجع نگه‌داشتن instance هنگام ثبت آگهی جدید
+        final ImagePickerView[] createPickerHolder = new ImagePickerView[1];
+
         if (!editMode) {
-            // فقط در حالت ثبت آگهی جدید، دسته‌بندی و شهر قابل انتخاب هستند.
-            // طبق مستند API، ویرایش آگهی (PUT) فقط title/description/price را می‌پذیرد.
             loadCategories(categoryBox);
             loadCities(cityBox);
             box.getChildren().addAll(categoryBox, cityBox);
+
+            // در حالت ثبت آگهی جدید، هنوز شناسه‌ای نداریم؛ عکس‌ها موقتاً محلی نگه داشته می‌شوند.
+            ImagePickerView picker = new ImagePickerView(null, Collections.emptyList(), true);
+            createPickerHolder[0] = picker;
+            imagesContainer.getChildren().add(picker.getNode());
         } else {
             Label editHint = new Label("توجه: در حالت ویرایش، دسته‌بندی و شهر آگهی قابل تغییر نیستند.");
             editHint.setStyle("-fx-text-fill: #888; -fx-font-size: 11px;");
             box.getChildren().add(editHint);
 
-            loadExistingAd(adId, titleField, descriptionField, priceField);
+            Label imagesLoading = new Label("در حال بارگذاری تصاویر...");
+            imagesLoading.setStyle("-fx-text-fill: #cfcfcf;");
+            imagesContainer.getChildren().add(imagesLoading);
+
+            loadExistingAd(adId, titleField, descriptionField, priceField, imagesContainer, imagesLoading);
         }
 
+        box.getChildren().addAll(imagesTitle, imagesContainer);
+
         Button submitButton = new Button(editMode ? "ذخیره تغییرات" : "ثبت آگهی");
+        submitButton.setStyle(PRIMARY_BUTTON_STYLE);
         submitButton.setMaxWidth(400);
 
         Button cancelButton = new Button("انصراف");
+        cancelButton.setStyle(SECONDARY_BUTTON_STYLE);
         cancelButton.setMaxWidth(400);
         cancelButton.setOnAction(e -> {
             if (editMode) {
@@ -153,9 +178,20 @@ public class AdFormView {
                     }
                 };
                 task.setOnSucceeded(ev -> {
-                    submitButton.setDisable(false);
-                    AlertUtil.showInfo("آگهی ثبت شد و در انتظار بررسی و تایید مدیر است.");
-                    SceneManager.show(AdListView.build(), "لیست آگهی‌ها");
+                    Long newId = task.getValue();
+                    SessionManager.getInstance().rememberCreatedAd(newId);
+
+                    Runnable finish = () -> {
+                        submitButton.setDisable(false);
+                        AlertUtil.showInfo("آگهی ثبت شد و در انتظار بررسی و تایید مدیر است.");
+                        SceneManager.show(AdListView.build(), "لیست آگهی‌ها");
+                    };
+
+                    if (createPickerHolder[0] != null) {
+                        createPickerHolder[0].uploadPendingTo(newId, finish);
+                    } else {
+                        finish.run();
+                    }
                 });
                 task.setOnFailed(ev -> {
                     submitButton.setDisable(false);
@@ -165,11 +201,12 @@ public class AdFormView {
             }
         });
 
-        box.getChildren().addAll(submitButton, cancelButton, statusLabel);
+        box.getChildren().addAll(submitButton, cancelButton);
         return box;
     }
 
-    private static void loadExistingAd(long adId, TextField titleField, TextArea descriptionField, TextField priceField) {
+    private static void loadExistingAd(long adId, TextField titleField, TextArea descriptionField,
+                                       TextField priceField, VBox imagesContainer, Label imagesLoading) {
         Task<AdvertisementDetail> task = new Task<>() {
             @Override
             protected AdvertisementDetail call() throws Exception {
@@ -181,8 +218,15 @@ public class AdFormView {
             titleField.setText(ad.title != null ? ad.title : "");
             descriptionField.setText(ad.description != null ? ad.description : "");
             priceField.setText(ad.price != null ? String.valueOf(ad.price) : "");
+
+            imagesContainer.getChildren().remove(imagesLoading);
+            ImagePickerView picker = new ImagePickerView(adId, ad.images, true);
+            imagesContainer.getChildren().add(picker.getNode());
         });
-        task.setOnFailed(e -> AlertUtil.showError(AlertUtil.extractMessage(task.getException())));
+        task.setOnFailed(e -> {
+            imagesContainer.getChildren().remove(imagesLoading);
+            AlertUtil.showError(AlertUtil.extractMessage(task.getException()));
+        });
         new Thread(task).start();
     }
 
