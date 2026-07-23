@@ -127,6 +127,7 @@ public class AdvertisementService {
                 ad.getCity().getName(),
                 ad.getCategory().getName(),
                 ad.getStatus().name(),
+                ad.getRejectionReason(), 
                 ad.getCreatedAt(),
                 imagePaths,
                 ownerInfo

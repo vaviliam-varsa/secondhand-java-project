@@ -12,12 +12,13 @@ public class AdvertisementDetailResponse {
     private String city;
     private String category;
     private String status;
+    private String rejectionReason;
     private LocalDateTime createdAt;
     private List<String> images;
     private OwnerInfo owner;
 
     public AdvertisementDetailResponse(Long id, String title, String description, Long price,
-                                       String city, String category, String status,
+                                       String city, String category, String status, String rejectionReason,
                                        LocalDateTime createdAt, List<String> images, OwnerInfo owner) {
         this.id = id;
         this.title = title;
@@ -26,6 +27,7 @@ public class AdvertisementDetailResponse {
         this.city = city;
         this.category = category;
         this.status = status;
+        this.rejectionReason = rejectionReason;
         this.createdAt = createdAt;
         this.images = images;
         this.owner = owner;
@@ -38,6 +40,7 @@ public class AdvertisementDetailResponse {
     public String getCity() { return city; }
     public String getCategory() { return category; }
     public String getStatus() { return status; }
+    public String getRejectionReason() { return rejectionReason; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public List<String> getImages() { return images; }
     public OwnerInfo getOwner() { return owner; }
