@@ -419,6 +419,8 @@ Authorization: Bearer <token>
 GET /api/admin/users
 Authorization: Bearer <token>
 ```
+Only returns accounts with role `USER` — admin accounts are excluded from this list.
+
 **Response (200 OK):**
 ```json
 [
@@ -435,6 +437,7 @@ Authorization: Bearer <token>
 ```json
 { "message": "User blocked" }
 ```
+**Possible errors:** `400` (target user is an admin — admin accounts cannot be blocked), `404`
 
 ### Unblock a user
 ```
