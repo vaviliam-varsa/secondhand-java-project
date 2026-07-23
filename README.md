@@ -18,7 +18,9 @@ A web-based marketplace application where users can register, post advertisement
 - Maven
 
 **Frontend**
-- JavaFX *(in progress)*
+- JavaFX 21
+- Jackson (JSON serialization/deserialization)
+- Java 11 HttpClient (for calling the backend REST API)
 
 ---
 
@@ -44,7 +46,7 @@ mvn -version
 secondhand-java-project/
 ├── backend/     # Spring Boot backend (Java)
 ├── frontend/    # JavaFX frontend
-├── docs/        # API contract, task list, and other documentation
+├── docs/        # API contract and other documentation
 └── README.md
 ```
 
@@ -72,14 +74,19 @@ No manual database setup is required — SQLite creates the database file (`seco
 
 ## Running the Frontend
 
-*(To be completed once the JavaFX frontend is implemented.)*
-
-```
-cd frontend
-mvn javafx:run
-```
-
 Make sure the backend is running first, since the frontend depends on it (`http://localhost:8080`).
+
+1. Navigate to the frontend folder:
+   ```
+   cd frontend
+   ```
+2. Run the application:
+   ```
+   mvn javafx:run
+   ```
+3. A JavaFX window opens starting on the login screen. Register a new account or use one of the [test accounts](#test-accounts) below.
+
+The backend base URL is configured in `ApiConfig.java` (defaults to `http://localhost:8080`) — update it there if the backend runs on a different host or port.
 
 ---
 
@@ -96,27 +103,21 @@ This project uses **SQLite** as the persistent storage method. No external datab
 ## Test Accounts
 
 The database starts empty. To test the application, register regular
-user accounts (or any accounts you prefer) via `POST /api/auth/register`.
+user accounts (or any accounts you prefer) via `POST /api/auth/register`
+(or through the registration screen in the JavaFX app).
 
 A default admin account is created automatically on first run:
 
 | Role | Username | Password |
 |---|---|---|
 | Admin (built-in) | `admin` | `Admin@123` |
-| Regular user | `testuser1` | `123456` |
-| Regular user | `testuser2` | `123456` |
 
 > **Note:** The admin account is seeded automatically when the backend
 > starts (see `AdminSeeder`), so no manual database editing is needed.
-> Regular users are always registered with the `USER` role by default.
-
-| Role | Username | Password |
-|---|---|---|
-| Regular user | `testuser1` | `123456` |
-| Regular user | `testuser2` | `123456` |
-| Admin | `admin1` | `123456` |
-
-> **Note:** New users are always registered with the `USER` role by default. To create an admin account, register a normal user first, then manually change the `role` column to `ADMIN` in the `users` table (e.g. using DB Browser for SQLite) while the backend is stopped.
+> New users registered through the app are always given the `USER` role
+> by default. To promote a regular user to `ADMIN`, stop the backend and
+> manually change the `role` column for that user in the `users` table
+> (e.g. using DB Browser for SQLite).
 
 ---
 
@@ -136,30 +137,55 @@ A default admin account is created automatically on first run:
 - Admin panel: listing pending advertisements, approving/rejecting them, listing users, blocking/unblocking users
 - Image upload for advertisements (multipart upload, stored on disk, served as static resources, ownership-restricted)
 - Standardized error responses (`{ "message": ..., "status": ... }`) across all endpoints
-- Full API documentation available in [`docs/api-contract.md`](docs/api-contract.md)
+- Full API documentation available in [`docs/api-contract-en.md`](docs/api-contract-en.md)
 
-### Frontend
-*(To be completed as JavaFX screens are implemented — e.g. registration/login, advertisement listing and search, advertisement details, posting/editing ads, favorites, chat, ratings, admin panel.)*
+### Frontend (complete)
+- Login and registration screens, with the session (JWT) kept in memory for subsequent requests
+- Advertisement listing with keyword search, category/city/price filters, and sorting
+- Advertisement detail view, including seller info and rating summary
+- Posting, editing, and marking-as-sold for the current user's own advertisements (`My Ads`)
+- Image picker for attaching photos to an advertisement
+- Favorites: add/remove and view saved advertisements
+- Chat: list of conversations and a message thread view for messaging sellers/buyers
+- Ratings: submitting a score/comment for a seller and viewing rating comments
+- Admin panel: reviewing pending advertisements (approve/reject) and managing users (list/block/unblock)
 
 ---
 
 ## Screenshots
 
-*(To be added once the frontend UI is available.)*
+### Login
+![Login](screenshots/Login.png)
 
+### Register
+![Register](screenshots/Register.png)
+
+### Home
+![Home](screenshots/Advertisement List.png)
+
+### Admin Panel
+![AdminPanel](screenshots/Admin Panel.png)
+
+### Category Managment
+![CategoryManagment](screenshots/Category Management.png)
+
+### Create Advertisement
+![CreateAdvertisement](screenshots/Create Advertisement.png)
+
+### Advertisement Details
+![AdvertisementDetails](screenshots/Advertisement Details.png)
 ---
 
 ## Individual Contributions
 
 **Parsa Vakili:**
-I was responsible for designing and implementing the entire Backend of the project. This included setting up the initial Spring Boot project structure with SQLite as the persistence layer, and designing the domain model (User, Advertisement, AdImage, Category, City, Conversation, Message, Favorite, and Rating entities) along with their relationships. I implemented the layered architecture (repository, service, controller, DTO, and exception-handling layers) and built authentication and authorization from scratch, including JWT token generation/validation and Spring Security configuration to protect routes based on ownership and user roles. I implemented all core API endpoints — advertisement CRUD with keyword search, filtering, and sorting; favorites; the chat system (conversations and messages); the rating system with validation rules; the admin panel for reviewing advertisements and managing users; and image upload for advertisements. I manually tested every endpoint (success and error paths) using Postman throughout development, and wrote the API contract (`docs/api-contract.md`) that documents all endpoints for frontend integration, along with the project task list and this README.
+I was responsible for designing and implementing the entire Backend of the project. This included setting up the initial Spring Boot project structure with SQLite as the persistence layer, and designing the domain model (User, Advertisement, AdImage, Category, City, Conversation, Message, Favorite, and Rating entities) along with their relationships. I implemented the layered architecture (repository, service, controller, DTO, and exception-handling layers) and built authentication and authorization from scratch, including JWT token generation/validation and Spring Security configuration to protect routes based on ownership and user roles. I implemented all core API endpoints — advertisement CRUD with keyword search, filtering, and sorting; favorites; the chat system (conversations and messages); the rating system with validation rules; the admin panel for reviewing advertisements and managing users; and image upload for advertisements. I manually tested every endpoint (success and error paths) using Postman throughout development, and wrote the API contract (`docs/api-contract-en.md`) that documents all endpoints for frontend integration, along with this README.
 
 **Mahdi Nikzad:**
-*(To be completed — describe your role in design, implementation, testing, and documentation.)*
+I was responsible for the JavaFX frontend: the API client layer (`ApiClient`/`MultipartApiClient`) for calling the backend REST endpoints, the session/state management (`SessionManager`), and the UI screens covering login/registration, advertisement listing with search and filters, advertisement details, posting/editing/marking-as-sold for the user's own ads, image upload, favorites, chat conversations and messaging, seller ratings, and the admin panel.
 
 ---
 
 ## Additional Documentation
 
-- [`docs/api-contract.md`](docs/api-contract.md) — full list of API endpoints with request/response examples
-- [`docs/task-list.md`](docs/task-list.md) — detailed backend and frontend task checklist
+- [`docs/api-contract-en.md`](docs/api-contract-en.md) — full list of API endpoints with request/response examples
