@@ -50,6 +50,7 @@ public class AdminService {
                 .orElseThrow(() -> new ResourceNotFoundException("Advertisement not found"));
 
         ad.setStatus(AdStatus.ACTIVE);
+        ad.setRejectionReason(null);
         advertisementRepository.save(ad);
     }
 
@@ -58,6 +59,7 @@ public class AdminService {
                 .orElseThrow(() -> new ResourceNotFoundException("Advertisement not found"));
 
         ad.setStatus(AdStatus.REJECTED);
+        ad.setRejectionReason(reason);
         advertisementRepository.save(ad);
     }
 

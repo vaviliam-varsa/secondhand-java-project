@@ -28,6 +28,9 @@ public class Advertisement {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(length = 1000)
+    private String rejectionReason;
+
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
@@ -91,6 +94,14 @@ public class Advertisement {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
     }
 
     public User getOwner() {

@@ -97,11 +97,14 @@ GET /api/advertisements/{id}
   "city": "Tehran",
   "category": "Digital Goods",
   "status": "ACTIVE",
+  "rejectionReason": null,
   "createdAt": "2026-07-15T10:30:00",
   "images": ["images/ad5-1.jpg", "images/ad5-2.jpg"],
   "owner": { "id": 3, "fullName": "Ali Rezaei" }
 }
 ```
+`rejectionReason` is `null` unless `status` is `REJECTED`, in which case it holds the reason the admin gave when rejecting the advertisement.
+
 **Possible errors:** `404` (advertisement not found)
 
 ---
