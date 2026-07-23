@@ -161,19 +161,19 @@ A default admin account is created automatically on first run:
 ![Register](screenshots/Register.png)
 
 ### Home
-![Home](screenshots/Advertisement List.png)
+![Home](screenshots/AdvertisementList.png)
 
 ### Admin Panel
-![AdminPanel](screenshots/Admin Panel.png)
+![AdminPanel](screenshots/AdminPanel.png)
 
 ### Category Managment
-![CategoryManagment](screenshots/Category Management.png)
+![CategoryManagment](screenshots/CategoryManagement.png)
 
 ### Create Advertisement
-![CreateAdvertisement](screenshots/Create Advertisement.png)
+![CreateAdvertisement](screenshots/CreateAdvertisement.png)
 
 ### Advertisement Details
-![AdvertisementDetails](screenshots/Advertisement Details.png)
+![AdvertisementDetails](screenshots/AdvertisementDetails.png)
 ---
 
 ## Individual Contributions
