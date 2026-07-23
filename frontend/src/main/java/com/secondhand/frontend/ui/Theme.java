@@ -24,6 +24,10 @@ public class Theme {
             "-fx-background-color: #2e2e30; -fx-text-fill: #cfcfcf; -fx-background-radius: 6; -fx-padding: 8 14 8 14; -fx-cursor: hand;";
     private static final String LINK_BUTTON_STYLE =
             "-fx-background-color: transparent; -fx-text-fill: #6ea8fe; -fx-cursor: hand;";
+    private static final String SUCCESS_BUTTON_STYLE =
+            "-fx-background-color: #2e7d32; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 16 8 16; -fx-cursor: hand;";
+    private static final String DANGER_BUTTON_STYLE =
+            "-fx-background-color: #7a2020; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 16 8 16; -fx-cursor: hand;";
 
     public static Button primaryButton(String text) {
         Button b = new Button(text);
@@ -40,6 +44,18 @@ public class Theme {
     public static Button linkButton(String text) {
         Button b = new Button(text);
         b.setStyle(LINK_BUTTON_STYLE);
+        return b;
+    }
+
+    public static Button successButton(String text) {
+        Button b = new Button(text);
+        b.setStyle(SUCCESS_BUTTON_STYLE);
+        return b;
+    }
+
+    public static Button dangerButton(String text) {
+        Button b = new Button(text);
+        b.setStyle(DANGER_BUTTON_STYLE);
         return b;
     }
 }
