@@ -37,7 +37,7 @@ public class SecurityConfig {
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/advertisements", "/api/advertisements/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/categories", "/api/categories/**").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/cities", "/api/cities/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/users/*/ratings", "/api/users/*/ratings/comments").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
