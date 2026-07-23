@@ -95,7 +95,20 @@ This project uses **SQLite** as the persistent storage method. No external datab
 
 ## Test Accounts
 
-The database starts empty. To test the application, register the following accounts (or any accounts you prefer) via `POST /api/auth/register`:
+The database starts empty. To test the application, register regular
+user accounts (or any accounts you prefer) via `POST /api/auth/register`.
+
+A default admin account is created automatically on first run:
+
+| Role | Username | Password |
+|---|---|---|
+| Admin (built-in) | `admin` | `Admin@123` |
+| Regular user | `testuser1` | `123456` |
+| Regular user | `testuser2` | `123456` |
+
+> **Note:** The admin account is seeded automatically when the backend
+> starts (see `AdminSeeder`), so no manual database editing is needed.
+> Regular users are always registered with the `USER` role by default.
 
 | Role | Username | Password |
 |---|---|---|
