@@ -97,51 +97,10 @@ public class AdminPanelView {
         Label label = new Label(ad.title + "   |   فروشنده: " + ownerName);
         label.setMaxWidth(500);
 
-        Button approveButton = new Button("تایید");
-        Button rejectButton = new Button("رد کردن");
+        Button reviewButton = new Button("مشاهده و بررسی");
+        reviewButton.setOnAction(e -> SceneManager.show(AdminAdDetailView.build(ad.id), "بررسی آگهی"));
 
-        HBox row = new HBox(10, label, approveButton, rejectButton);
-
-        approveButton.setOnAction(e -> {
-            Task<Void> task = new Task<>() {
-                @Override
-                protected Void call() throws Exception {
-                    AdminService.approve(ad.id);
-                    return null;
-                }
-            };
-            task.setOnSucceeded(ev -> {
-                AlertUtil.showInfo("آگهی تایید شد.");
-                itemsBox.getChildren().remove(row);
-            });
-            task.setOnFailed(ev -> AlertUtil.showError(AlertUtil.extractMessage(task.getException())));
-            new Thread(task).start();
-        });
-
-        rejectButton.setOnAction(e -> {
-            TextInputDialog dialog = new TextInputDialog();
-            dialog.setTitle("رد آگهی");
-            dialog.setHeaderText(null);
-            dialog.setContentText("دلیل رد آگهی:");
-            Optional<String> result = dialog.showAndWait();
-            result.ifPresent(reason -> {
-                Task<Void> task = new Task<>() {
-                    @Override
-                    protected Void call() throws Exception {
-                        AdminService.reject(ad.id, reason);
-                        return null;
-                    }
-                };
-                task.setOnSucceeded(ev -> {
-                    AlertUtil.showInfo("آگهی رد شد.");
-                    itemsBox.getChildren().remove(row);
-                });
-                task.setOnFailed(ev -> AlertUtil.showError(AlertUtil.extractMessage(task.getException())));
-                new Thread(task).start();
-            });
-        });
-
-        return row;
+        return new HBox(10, label, reviewButton);
     }
 
     private static VBox buildUsersPane() {
