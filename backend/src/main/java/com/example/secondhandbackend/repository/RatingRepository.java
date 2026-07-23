@@ -18,4 +18,13 @@ public interface RatingRepository extends JpaRepository<Rating, Long> {
 
     @Query("SELECT COUNT(r) FROM Rating r WHERE r.seller.id = :sellerId")
     Long countBySellerId(@Param("sellerId") Long sellerId);
+
+    @Query("SELECT r FROM Rating r WHERE r.seller.id = :sellerId " +
+            "AND r.comment IS NOT NULL AND r.comment <> '' " +
+            "ORDER BY r.createdAt DESC")
+    List<Rating> findCommentsBySellerId(@Param("sellerId") Long sellerId);
+
+    @Query("SELECT COUNT(r) FROM Rating r WHERE r.seller.id = :sellerId " +
+            "AND r.comment IS NOT NULL AND r.comment <> ''")
+    Long countCommentsBySellerId(@Param("sellerId") Long sellerId);
 }

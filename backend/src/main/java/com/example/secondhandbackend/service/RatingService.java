@@ -1,5 +1,7 @@
 package com.example.secondhandbackend.service;
 
+import com.example.secondhandbackend.dto.RatingCommentResponse;
+import com.example.secondhandbackend.dto.RatingCommentsPageResponse;
 import com.example.secondhandbackend.dto.RatingSummaryResponse;
 import com.example.secondhandbackend.entity.Advertisement;
 import com.example.secondhandbackend.entity.Rating;
@@ -11,6 +13,9 @@ import com.example.secondhandbackend.repository.AdvertisementRepository;
 import com.example.secondhandbackend.repository.RatingRepository;
 import com.example.secondhandbackend.repository.UserRepository;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class RatingService {
@@ -55,6 +60,7 @@ public class RatingService {
         rating.setSeller(seller);
         rating.setScore(score);
         rating.setComment(comment);
+        rating.setCreatedAt(LocalDateTime.now());
 
         ratingRepository.save(rating);
     }
@@ -67,5 +73,34 @@ public class RatingService {
         double roundedAverage = average != null ? Math.round(average * 10.0) / 10.0 : 0.0;
 
         return new RatingSummaryResponse(roundedAverage, total);
+    }
+
+    /**
+     * Returns the seller's text reviews, newest first.
+     * If {@code limit} is null, all comments are returned (used by the
+     * "see all reviews" page); otherwise only the first {@code limit}
+     * comments are returned (used to show a short preview, e.g. 3 items),
+     * alongside the true total count so the frontend knows whether a
+     * "see all" option should be shown.
+     */
+    public RatingCommentsPageResponse getSellerComments(Long sellerId, Integer limit) {
+
+        List<Rating> ratings = ratingRepository.findCommentsBySellerId(sellerId);
+        long totalCount = ratingRepository.countCommentsBySellerId(sellerId);
+
+        if (limit != null && limit >= 0 && ratings.size() > limit) {
+            ratings = ratings.subList(0, limit);
+        }
+
+        List<RatingCommentResponse> comments = ratings.stream()
+                .map(r -> new RatingCommentResponse(
+                        r.getId(),
+                        r.getScore(),
+                        r.getComment(),
+                        r.getRater().getFullName(),
+                        r.getCreatedAt()))
+                .toList();
+
+        return new RatingCommentsPageResponse(comments, totalCount);
     }
 }
