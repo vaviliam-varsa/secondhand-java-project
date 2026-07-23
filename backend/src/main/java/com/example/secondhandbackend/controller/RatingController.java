@@ -1,6 +1,7 @@
 package com.example.secondhandbackend.controller;
 
 import com.example.secondhandbackend.dto.MessageResponse;
+import com.example.secondhandbackend.dto.RatingCommentsPageResponse;
 import com.example.secondhandbackend.dto.RatingSummaryResponse;
 import com.example.secondhandbackend.dto.SubmitRatingRequest;
 import com.example.secondhandbackend.service.RatingService;
@@ -28,5 +29,12 @@ public class RatingController {
     @GetMapping("/api/users/{id}/ratings")
     public RatingSummaryResponse getUserRatings(@PathVariable Long id) {
         return ratingService.getSellerRatings(id);
+    }
+
+    @GetMapping("/api/users/{id}/ratings/comments")
+    public RatingCommentsPageResponse getUserRatingComments(
+            @PathVariable Long id,
+            @RequestParam(required = false) Integer limit) {
+        return ratingService.getSellerComments(id, limit);
     }
 }

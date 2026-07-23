@@ -349,6 +349,28 @@ GET /api/users/{id}/ratings
 }
 ```
 
+### Get a seller's text reviews
+```
+GET /api/users/{id}/ratings/comments?limit=3
+```
+`limit` is optional. If omitted, all text reviews are returned (used for the "see all reviews" page). If provided, only the first `limit` reviews (newest first) are returned, alongside the true total count so the client knows whether to show a "see all" option. Only ratings that include a non-empty comment are returned.
+
+**Response (200 OK):**
+```json
+{
+  "comments": [
+    {
+      "id": 9,
+      "score": 5,
+      "comment": "Great seller, fast response!",
+      "raterName": "Ali Rezaei",
+      "createdAt": "2026-07-19T18:00:00"
+    }
+  ],
+  "totalCount": 7
+}
+```
+
 ---
 
 ## 7. Admin Panel — requires JWT with ADMIN role

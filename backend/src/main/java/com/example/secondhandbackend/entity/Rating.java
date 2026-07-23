@@ -1,6 +1,7 @@
 package com.example.secondhandbackend.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "ratings")
@@ -15,6 +16,9 @@ public class Rating {
 
     @Column(length = 1000)
     private String comment;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "advertisement_id", nullable = false)
@@ -53,6 +57,14 @@ public class Rating {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     public Advertisement getAdvertisement() {
