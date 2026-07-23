@@ -1,5 +1,8 @@
 package com.secondhand.frontend.session;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SessionManager {
     private static final SessionManager INSTANCE = new SessionManager();
 
@@ -7,6 +10,10 @@ public class SessionManager {
     private Long userId;
     private String username;
     private String role;
+
+    // Client-side convenience only: remembers ids of ads created during this session
+    // so the user can find them even before an admin approves them (used by MyAdsView).
+    private final List<Long> myAdIds = new ArrayList<>();
 
     private SessionManager() {}
 
@@ -26,6 +33,7 @@ public class SessionManager {
         this.userId = null;
         this.username = null;
         this.role = null;
+        this.myAdIds.clear();
     }
 
     public boolean isLoggedIn() {
@@ -40,4 +48,14 @@ public class SessionManager {
     public Long getUserId() { return userId; }
     public String getUsername() { return username; }
     public String getRole() { return role; }
+
+    public void rememberCreatedAd(Long adId) {
+        if (adId != null && !myAdIds.contains(adId)) {
+            myAdIds.add(adId);
+        }
+    }
+
+    public List<Long> getMyAdIds() {
+        return myAdIds;
+    }
 }
