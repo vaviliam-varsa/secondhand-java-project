@@ -7,6 +7,7 @@ import com.example.secondhandbackend.entity.Category;
 import com.example.secondhandbackend.entity.User;
 import com.example.secondhandbackend.enums.AdStatus;
 import com.example.secondhandbackend.enums.UserStatus;
+import com.example.secondhandbackend.enums.Role;
 import com.example.secondhandbackend.exception.DuplicateResourceException;
 import com.example.secondhandbackend.exception.InvalidInputException;
 import com.example.secondhandbackend.exception.ResourceNotFoundException;
@@ -64,7 +65,7 @@ public class AdminService {
     }
 
     public List<AdminUserResponse> getAllUsers() {
-        List<User> users = userRepository.findAll();
+        List<User> users = userRepository.findByRole(Role.USER);
 
         return users.stream()
                 .map(u -> new AdminUserResponse(u.getId(), u.getFullName(), u.getUsername(), u.getStatus().name()))
@@ -74,6 +75,10 @@ public class AdminService {
     public void blockUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (user.getRole() == Role.ADMIN) {
+            throw new InvalidInputException("Admin accounts cannot be blocked");
+        }
 
         user.setStatus(UserStatus.BLOCKED);
         userRepository.save(user);
