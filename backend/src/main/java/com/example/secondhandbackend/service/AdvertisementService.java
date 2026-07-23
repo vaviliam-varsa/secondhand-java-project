@@ -147,6 +147,11 @@ public class AdvertisementService {
         ad.setDescription(description);
         ad.setPrice(price);
 
+        if (ad.getStatus() == AdStatus.REJECTED) {
+            ad.setStatus(AdStatus.PENDING);
+            ad.setRejectionReason(null);
+        }
+
         advertisementRepository.save(ad);
     }
 
