@@ -124,7 +124,7 @@ public class AdminService {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
-        if (advertisementRepository.existsByCategoryId(id)) {
+        if (advertisementRepository.existsByCategoryIdAndStatusNot(id, AdStatus.DELETED)) {
             throw new InvalidInputException("این دسته‌بندی به یک یا چند آگهی متصل است و قابل حذف نیست");
         }
 
